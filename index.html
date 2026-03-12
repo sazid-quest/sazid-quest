@@ -271,90 +271,105 @@
     .book-spine-author { font-family:var(--mono); font-size:.38rem; color:rgba(255,255,255,.5); writing-mode:vertical-rl; white-space:nowrap; overflow:hidden; }
 
         /* ── POST OVERLAY — Asterisk style ── */
+    /* ── POST OVERLAY — full page, scrollable ── */
     #post-overlay{
       display:none;position:fixed;inset:0;z-index:300;
-      overflow-y:auto;background:var(--paper);
-      opacity:0;transform:translateY(20px);
-      transition:opacity .35s ease,transform .35s ease;
+      overflow-y:auto;overflow-x:hidden;
+      background:var(--paper);
+      opacity:0;transition:opacity .3s ease;
     }
     #post-overlay.open{display:block}
-    #post-overlay.visible{opacity:1;transform:translateY(0)}
-    .post-layout{
-      display:grid;grid-template-columns:200px 1fr;
-      max-width:1100px;margin:0 auto;min-height:100vh;
-      padding:4rem 3rem;gap:5rem;
+    #post-overlay.visible{opacity:1}
+
+    /* sticky top bar inside overlay */
+    .post-topbar{
+      position:sticky;top:0;z-index:10;
+      background:var(--paper);border-bottom:1px solid var(--border);
+      padding:.8rem 2rem;display:flex;align-items:center;justify-content:space-between;
     }
-    /* left sidebar */
-    .post-sidebar{position:sticky;top:4rem;height:fit-content}
     .post-close{
       font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;
       text-transform:uppercase;color:var(--muted);background:none;
       border:none;cursor:pointer;display:flex;align-items:center;
-      gap:.5rem;transition:color .2s;padding:0;margin-bottom:3rem;
+      gap:.5rem;transition:color .2s;padding:0;
     }
     .post-close:hover{color:var(--red)}
+    .post-topbar-tag{
+      font-family:var(--mono);font-size:.55rem;letter-spacing:.15em;
+      text-transform:uppercase;color:var(--muted);
+    }
+
+    /* layout: sidebar + content, collapses on mobile */
+    .post-layout{
+      display:grid;
+      grid-template-columns:180px 1fr;
+      max-width:1000px;margin:0 auto;
+      padding:3rem 2rem 6rem;gap:4rem;
+    }
+
+    /* left sidebar — sticky */
+    .post-sidebar{position:sticky;top:5rem;height:fit-content}
     .post-sidebar-tag{
       font-family:var(--mono);font-size:.55rem;letter-spacing:.15em;
-      text-transform:uppercase;color:var(--red);display:block;margin-bottom:2rem;
+      text-transform:uppercase;color:var(--red);display:block;margin-bottom:1.2rem;
     }
     .post-sidebar-date{
       font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;
-      color:var(--muted);display:block;margin-bottom:3rem;
+      color:var(--muted);display:block;margin-bottom:2.5rem;line-height:1.8;
     }
-    /* section markers */
     .post-toc{display:flex;flex-direction:column;gap:.8rem}
     .post-toc-marker{
       display:flex;align-items:center;gap:.6rem;
       font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;
-      color:rgba(14,12,10,.25);text-transform:uppercase;
-      transition:color .2s;cursor:default;
+      color:rgba(14,12,10,.2);text-transform:uppercase;transition:color .2s;
     }
-    .post-toc-marker::before{
-      content:'';display:block;width:20px;height:1px;
-      background:currentColor;flex-shrink:0;
-    }
+    .post-toc-marker::before{content:'';display:block;width:20px;height:1px;background:currentColor;flex-shrink:0}
     .post-toc-marker.active{color:var(--red)}
-    /* main content */
-    .post-main{padding-top:.5rem}
+
+    /* right: post content */
+    .post-main{min-width:0}
     .post-full-tag{
       font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;
-      text-transform:uppercase;color:var(--red);display:block;margin-bottom:1.2rem;
+      text-transform:uppercase;color:var(--red);display:block;margin-bottom:1rem;
     }
     .post-full-title{
-      font-family:var(--display);font-size:clamp(2.4rem,5vw,3.8rem);
-      font-weight:900;line-height:1.02;letter-spacing:-.02em;
-      color:var(--red);margin-bottom:1rem;
-    }
-    .post-full-subtitle{
-      font-family:var(--display);font-size:clamp(1.1rem,2vw,1.4rem);
-      font-style:italic;color:rgba(14,12,10,.55);line-height:1.5;
-      margin-bottom:1.5rem;max-width:680px;
+      font-family:var(--display);font-size:clamp(2rem,5vw,3.4rem);
+      font-weight:900;line-height:1.05;letter-spacing:-.02em;
+      color:var(--red);margin-bottom:.8rem;word-wrap:break-word;
     }
     .post-full-byline{
-      font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;
-      color:var(--muted);margin-bottom:3rem;padding-bottom:2.5rem;
+      font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
+      color:var(--muted);margin-bottom:2.5rem;padding-bottom:2rem;
       border-bottom:1px solid var(--border);
     }
-    .post-inline-img{margin:2.5rem 0}
-    .post-inline-img img{width:100%;max-height:460px;object-fit:cover;display:block}
+    .post-inline-img{margin:2rem 0}
+    .post-inline-img img{width:100%;max-height:480px;object-fit:cover;display:block}
     .post-full-body p{
-      font-family:var(--body);font-size:1.15rem;line-height:1.92;
-      color:#2a2520;margin-bottom:1.6rem;max-width:680px;
+      font-family:var(--body);font-size:clamp(1rem,2vw,1.18rem);
+      line-height:1.92;color:#2a2520;margin-bottom:1.6rem;
     }
     .post-full-body blockquote{
       border-left:3px solid var(--red);padding:1rem 1.5rem;
-      margin:2.5rem 0;background:var(--cream);
+      margin:2rem 0;background:var(--cream);
     }
     .post-full-body blockquote p{
-      font-family:var(--display);font-size:1.25rem;font-style:italic;
-      color:var(--ink);margin:0;
+      font-family:var(--display);font-size:1.2rem;font-style:italic;color:var(--ink);margin:0;
     }
     .post-section-marker{
-      font-family:var(--mono);font-size:.55rem;letter-spacing:.15em;
-      text-transform:uppercase;color:rgba(14,12,10,.2);
-      margin:3rem 0 1rem;display:flex;align-items:center;gap:.8rem;
+      font-family:var(--mono);font-size:.52rem;letter-spacing:.15em;
+      text-transform:uppercase;color:rgba(14,12,10,.18);
+      margin:2.5rem 0 1rem;display:flex;align-items:center;gap:.8rem;
     }
     .post-section-marker::before{content:'';display:block;width:24px;height:1px;background:currentColor}
+
+    /* mobile: stack sidebar below topbar, hide toc */
+    @media(max-width:680px){
+      .post-layout{grid-template-columns:1fr;padding:1.5rem 1.2rem 4rem;gap:0}
+      .post-sidebar{position:static;display:flex;gap:1.5rem;align-items:baseline;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
+      .post-toc{display:none}
+      .post-sidebar-date{margin-bottom:0}
+      .post-full-title{font-size:clamp(1.8rem,8vw,2.8rem)}
+    }
 
     /* ── LOADING ── */
     .loading{display:flex;align-items:center;justify-content:center;padding:4rem;font-family:var(--mono);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
@@ -1041,58 +1056,7 @@
 <div id="post-overlay"></div>
 
 <script>
-  // ── POSTS — edit posts.json on GitHub to update ──────────
-  // Format: { id, title, language, category, date, excerpt, content, featured }
-  // To add a post: go to your GitHub repo, edit posts.json, commit. Done.
-  const POSTS = [
-    { id:1, title:"The True Cost of Partition", language:"English", category:"Essay", date:"2024-08-14", featured:true,
-      excerpt:"Divide and Rule didn't end with Independence — it just changed shape. Why must we talk of Hindus, Muslims, Sikhs? All we have to worry about is that we are men.",
-      content:"Divide and Rule didn't end with Independence — it just changed shape.\n\nWhy must we talk of Hindus, Muslims, Sikhs? All we have to worry about is that we are men. The Partition of 1947 was not merely a geographical division — it was a wound cut into the subcontinent's collective memory, one that bleeds in different ways with every passing generation.\n\nI grew up hearing stories. My grandmother spoke of neighbours who disappeared overnight. My father spoke of identity cards, of being asked which side you were on before being asked your name. These were not abstract historical events — they were the texture of lived lives, compressed and carried across borders.\n\nWhat troubles me most is not the violence itself — history is full of violence — but the way we have institutionalised the division. We have made the wound permanent by insisting it defines us. Every time a politician says 'Hindu-Muslim', every time a border guard asks your religion, the Partition continues.\n\nThe true cost of Partition is not measured in lives lost in 1947. It is measured in the identities we cannot inhabit today, the friendships that don't form across borders, the literature that doesn't travel, the music that doesn't reach its audience." },
-
-    { id:2, title:"Near. There. Where?", language:"English", category:"Essay", date:"2024-06-01", featured:false,
-      excerpt:"Times and again, I pause — and picture how blessed I am. I enjoy the beauty of words. I love the way they carry weight beyond their syllables.",
-      content:"Times and again, I pause — and picture how blessed I am.\n\nI enjoy the beauty of words. I love the way they carry weight beyond their syllables, the way a sentence can land differently at different moments of your life. The same line of Rilke that meant nothing at seventeen can crack you open at twenty-three.\n\nNear. There. Where? These three words arrived in my head during a walk. I did not know what they meant. I still don't entirely. But I wrote them down because that is what you do — you catch things before they dissolve.\n\nI think they are about proximity. About how the things we want most are always just slightly out of reach — not impossibly far, just frustratingly near. Near enough to see. There, somewhere. But where exactly?\n\nWriting is my attempt to close that distance." },
-
-    { id:3, title:"অকৃতজ্ঞ", language:"বাংলা", category:"প্রবন্ধ", date:"2024-05-10", featured:false,
-      excerpt:"বিনিদ্র রজনী। ঝরাপড়ার অঝোর বর্ষণ। বাইরে মাঝে মাঝে বিদ্যুৎ চমকানি। দূরে মেঘের মৃদু গুঞ্জন যেন কোনো অশনির সংকেত।",
-      content:"বিনিদ্র রজনী। ঝরাপড়ার অঝোর বর্ষণ। বাইরে মাঝে মাঝে বিদ্যুৎ চমকানি।\n\nদূরে মেঘের মৃদু গুঞ্জন যেন কোনো অশনির সংকেত। আমি জানালার ধারে বসে আছি। বৃষ্টির শব্দ শুনছি। ভাবছি কৃতজ্ঞতার কথা।\n\nআমরা কি সত্যিই কৃতজ্ঞ থাকতে পারি? নাকি কৃতজ্ঞতা একটি সাময়িক অনুভূতি — ভালো কিছু ঘটলে মনে পড়ে, কিন্তু দৈনন্দিন জীবনে হারিয়ে যায়?\n\nআমার মনে হয় আমরা বেশিরভাগ সময় অকৃতজ্ঞ। শুধু অন্যের প্রতি নয়, নিজের জীবনের প্রতি।" },
-
-    { id:4, title:"তোমাকে — কে ডাকে?", language:"বাংলা", category:"প্রবন্ধ", date:"2024-04-20", featured:false,
-      excerpt:"আটপৌরে সংসারের ন্যায় – আটপৌরে জীবন আমার। যেথায় এখন নিশীথের কারা বাসা বাঁধার সময়, সেথায় সায়েন্সের কুলি আঙ্গানে কি শো।",
-      content:"আটপৌরে সংসারের ন্যায় – আটপৌরে জীবন আমার।\n\nযেথায় এখন নিশীথের কারা বাসা বাঁধার সময়, সেথায় সায়েন্সের কুলি আঙ্গানে কি শোভা? তবুও বসে আছি। লিখছি। কারণ না লিখলে কে ডাকবে?\n\nলেখা একটি ডাক। নিজের ভেতর থেকে। অন্যের দিকে। সেই ডাকে সাড়া দেওয়াই লেখকের কাজ।" },
-
-    { id:5, title:"A Farewell to Arms", language:"English", category:"Book Review", date:"2024-03-15", featured:false,
-      excerpt:"I read the book a year ago, when the rain of promise would ripple along my arms. A year later, I return to it with different eyes.",
-      content:"I read the book a year ago, when the rain of promise would ripple along my arms.\n\nA year later, I return to it. Hemingway's sentences still hit the same way — short, declarative, like stones dropped into still water. Each one creates rings that spread outward long after the sentence has ended.\n\nThe love story is not the point, though it is the vehicle. The point is what war does to meaning. How it makes the grand gestures of peacetime feel absurd. How it makes even love feel like a brief shelter from the rain.\n\nI underlined this on first reading: 'The world breaks every one and afterward many are strong at the broken places.' I still believe it. I am less sure about what it costs to become strong." },
-
-    { id:6, title:"লিখতে কী লাগে?", language:"বাংলা", category:"প্রবন্ধ", date:"2024-02-28", featured:false,
-      excerpt:"লিখতে কী লাগে? বোধ, নাকি একটা মন? সে মনে কি প্রেম থাকা লাগে, নাকি বিরহ? বাইরে বাদলিকর ঝিমঝিম বৃষ্টি টুপটুপ।",
-      content:"লিখতে কী লাগে?\n\nবোধ, নাকি একটা মন? সে মনে কি প্রেম থাকা লাগে, নাকি বিরহ? বাইরে বাদলিকর ঝিমঝিম বৃষ্টি টুপটুপ। আমি বসে ভাবছি।\n\nআমার মনে হয় লিখতে লাগে শুধু মনোযোগ। সেই মনোযোগ যা একটা মুহূর্তকে ধরে রাখে। বৃষ্টির শব্দ, কারো হাসির ভঙ্গি, একটা বাক্যের ছন্দ।\n\nলেখা মানে সেই মনোযোগকে ভাষা দেওয়া।" },
-
-    { id:7, title:"The God of Small Things", language:"English", category:"Book Review", date:"2024-01-20", featured:false,
-      excerpt:"They all crossed into forbidden territory, they all tempered with the laws that lay down who should be loved, and how, and how much.",
-      content:"They all crossed into forbidden territory, they all tempered with the laws that lay down who should be loved, and how, and how much.\n\nArundhati Roy's novel does something that very few books manage: it makes you grieve for people who never existed. By the end, you carry Ammu and Velutha with you. You are implicated in what happened to them, even though you are only a reader.\n\nThe book is about small things — the smell of oranges, the way light falls, a child's observations that cut deeper than adult analysis. Roy understands that history lives in these small things. The big forces of caste and colonialism and family shame are always expressed through small acts, small cruelties, small moments of cowardice.\n\nI read it in Dhaka, in summer. The heat felt appropriate." },
-
-    { id:8, title:"STEM Girl or STAY Girl?", language:"English", category:"Commentary", date:"2023-12-10", featured:false,
-      excerpt:"The Struggle for Equality in South Asian Girls' Education. The 1948 Universal Declaration of Human Rights Article 26 states education is a fundamental right.",
-      content:"The 1948 Universal Declaration of Human Rights, Article 26: education is a fundamental right.\n\nAnd yet, in 2023, South Asian girls are still being asked to choose. Not between subjects, but between ambition and belonging. Between a career and a family that approves of them.\n\nThe STEM conversation misses the point. It is not about which subjects girls should study. It is about whether girls are allowed to want things — and to pursue those wants without losing the people they love.\n\nThe stay-or-go question is not about geography. It is about whether a girl's aspirations are taken seriously in her own home." },
-
-    { id:9, title:"Why I Almost Proposed to ChatGPT", language:"English", category:"Personal", date:"2023-11-05", featured:false,
-      excerpt:"It all started as a fun thing. Some juniors approached me saying, 'Bhai! As you use ChatGPT this much, why don't you marry it?'",
-      content:"It all started as a fun thing.\n\nSome juniors approached me saying, 'Bhai! As you use ChatGPT this much, why don't you marry it?' I laughed. Then I thought about it. Then I got slightly unsettled.\n\nThe thing about ChatGPT — about any good AI — is that it is relentlessly patient. It does not get tired. It does not get distracted. It does not need anything from you. Which sounds like a virtue until you realize that what you actually want from another person is their need, their distraction, their tiredness. You want to matter to someone who could, in theory, walk away.\n\nAn AI cannot walk away. That is not a relationship. That is a mirror that always reflects you well.\n\nI am not going to propose to ChatGPT. But I think about what it means that I briefly considered it." },
-
-    { id:10, title:"Who am I and Why!", language:"English", category:"Personal", date:"2023-10-01", featured:false,
-      excerpt:"The question followed me across three cities and two degree programs before I realized it was not a question to be answered but a question to live inside.",
-      content:"The question followed me across three cities and two degree programs before I realized it was not a question to be answered but a question to live inside.\n\nWho am I? The Bengali boy from Dhaka who came to Georgetown on a scholarship. The writer who didn't know he was a writer until a professor said so. The Muslim who asks too many questions. The friend who listens too carefully and remembers too much.\n\nAll of these. None of these. Something in between that doesn't have a name yet.\n\nI think identity is something you negotiate with the world, not something you discover in yourself. You become who you are in the encounters — in the moments where someone expects one thing from you and you give them another." },
-
-    { id:11, title:"The Fading Symphony", language:"English", category:"Essay", date:"2023-09-15", featured:false,
-      excerpt:"There is a kind of beauty that announces its own ending. The last movement of a symphony you love. The last hour of a summer afternoon.",
-      content:"There is a kind of beauty that announces its own ending.\n\nThe last movement of a symphony you love. The last hour of a summer afternoon. The final chapter of a book you have been reading slowly on purpose.\n\nI have been thinking about why this kind of beauty — beauty in decline, beauty that knows it is ending — moves us so deeply. More, often, than beauty at its height.\n\nI think it is because ending strips away the ornament. What remains when the music is almost over is only what was essential. The sadness of ending is the sadness of recognizing what mattered." },
-
-    { id:12, title:"Norwegian Wood", language:"English", category:"Book Review", date:"2023-08-20", featured:false,
-      excerpt:"Murakami writes grief the way it actually moves — not in a straight line, but circling back, finding you in unexpected places.",
-      content:"Murakami writes grief the way it actually moves — not in a straight line, but circling back, finding you in unexpected places.\n\nNorwegian Wood is a book about being twenty and not knowing how to carry loss. Toru doesn't know what to do with Kizuki's death or with Naoko's pain. He moves through the world with a kind of careful attentiveness, noticing everything, understanding little.\n\nI recognized that attentiveness. The sense that if you pay close enough attention, meaning will eventually reveal itself. It doesn't, of course. Or it does, but not in the way you expected.\n\nThe Beatles song plays at the beginning and the end. When I listen to it now, I hear the novel inside it." }
-  ];
+  let POSTS = [];
 
   // ── BOOKS for homepage strip ─────────────────────────────
   const RECENT_BOOKS = [
@@ -1201,9 +1165,12 @@
 
     const overlay = document.getElementById('post-overlay');
     overlay.innerHTML = `
+      <div class="post-topbar">
+        <button class="post-close" onclick="closePost()">← Back</button>
+        <span class="post-topbar-tag">* ${p.category} · ${p.language}</span>
+      </div>
       <div class="post-layout">
         <div class="post-sidebar">
-          <button class="post-close" onclick="closePost()">← Back</button>
           <span class="post-sidebar-tag">* ${p.category}</span>
           <span class="post-sidebar-date">${fmt(p.date)}</span>
           <div class="post-toc">${toc}</div>
@@ -1229,8 +1196,21 @@
 
   // ── INIT ─────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
-    renderFeaturedView();
-    renderBooks();
+    // Load posts from posts.json — the single source of truth
+    fetch('posts.json?v=' + Date.now())
+      .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
+      .then(data => {
+        POSTS.length = 0;
+        data.forEach(p => POSTS.push(p));
+        renderFeaturedView();
+        renderBooks();
+      })
+      .catch(err => {
+        console.warn('Could not load posts.json:', err);
+        // Show empty state so user knows something is wrong
+        const ws = document.getElementById('ws-featured-main');
+        if (ws) ws.innerHTML = '<p style="font-family:var(--mono);font-size:.65rem;color:var(--muted);padding:2rem">Could not load posts.json. Make sure it is in your repo.</p>';
+      });
   });
 </script>
 

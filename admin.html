@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Sazid's Blog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --ink:#0e0c0a;--paper:#f5f0e8;--cream:#ede7d9;
+      --red:#c0392b;--green:#1a4a2e;--muted:#7a7060;--border:#ccc4b0;
+      --display:'Playfair Display',Georgia,serif;
+      --body:'EB Garamond',Georgia,serif;
+      --mono:'Space Mono',monospace;
+    }
+    body{background:#1a1714;color:var(--paper);font-family:var(--body);font-size:16px;min-height:100vh}
+
+    /* ── TOP BAR ── */
+    .topbar{background:#0e0c0a;padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2a2520;position:sticky;top:0;z-index:100}
+    .topbar-logo{font-family:var(--mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--paper)}
+    .topbar-logo span{color:var(--red)}
+    .topbar-right{display:flex;align-items:center;gap:1.5rem}
+    .topbar-user{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;color:#6a6055}
+    .btn-logout{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;background:none;border:1px solid #3a3530;color:#9a9080;padding:.4rem 1rem;cursor:pointer;transition:all .2s}
+    .btn-logout:hover{border-color:var(--red);color:var(--red)}
+    .view-site{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:#9a9080;text-decoration:none;transition:color .2s}
+    .view-site:hover{color:var(--paper)}
+
+    /* ── LOGIN ── */
+    #login-screen{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 56px)}
+    .login-box{background:var(--paper);color:var(--ink);padding:3rem;width:100%;max-width:420px}
+    .login-box h1{font-family:var(--display);font-size:2rem;font-weight:700;margin-bottom:.4rem}
+    .login-box p{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;color:var(--muted);margin-bottom:2rem}
+    .field{margin-bottom:1.2rem}
+    .field label{font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.5rem}
+    .field input,.field select,.field textarea{width:100%;padding:.75rem 1rem;font-family:var(--body);font-size:1rem;border:1px solid var(--border);background:#fff;color:var(--ink);outline:none;transition:border-color .2s;border-radius:0}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--ink)}
+    .field textarea{resize:vertical;min-height:120px}
+    .btn-primary{width:100%;padding:.9rem;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s;margin-top:.5rem}
+    .btn-primary:hover{background:var(--red)}
+    .error-msg{font-family:var(--mono);font-size:.62rem;color:var(--red);margin-top:.8rem;display:none}
+
+    /* ── ADMIN LAYOUT ── */
+    #admin-app{display:none}
+    .admin-layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 56px)}
+
+    /* ── SIDEBAR NAV ── */
+    .admin-nav{background:#0e0c0a;border-right:1px solid #2a2520;padding:2rem 0}
+    .admin-nav-section{padding:0 1.5rem;margin-bottom:2rem}
+    .admin-nav-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:#3a3530;margin-bottom:.8rem;display:block}
+    .admin-nav-item{display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:#6a6055;cursor:pointer;transition:all .2s;border-left:2px solid transparent;margin-bottom:.2rem}
+    .admin-nav-item:hover{color:var(--paper);border-left-color:#3a3530}
+    .admin-nav-item.active{color:var(--paper);border-left-color:var(--red);background:rgba(192,57,43,.08)}
+    .admin-nav-item .icon{font-size:1rem;width:20px;text-align:center}
+    .post-count{background:var(--red);color:var(--paper);font-size:.5rem;padding:.1rem .4rem;border-radius:2px;margin-left:auto}
+
+    /* ── MAIN CONTENT ── */
+    .admin-main{background:#1a1714;overflow-y:auto}
+
+    /* ── VIEWS ── */
+    .view{display:none;padding:2.5rem}
+    .view.active{display:block}
+
+    /* Posts List View */
+    .view-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid #2a2520}
+    .view-header h2{font-family:var(--display);font-size:1.8rem;font-weight:700}
+    .btn-new{font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;background:var(--red);color:var(--paper);border:none;padding:.75rem 1.5rem;cursor:pointer;transition:background .2s;display:flex;align-items:center;gap:.5rem}
+    .btn-new:hover{background:#a93226}
+
+    /* Post row */
+    .posts-list{display:flex;flex-direction:column;gap:0}
+    .post-row{display:grid;grid-template-columns:60px 1fr auto;gap:1.5rem;align-items:center;padding:1.2rem 0;border-bottom:1px solid #2a2520}
+    .post-row-thumb{width:60px;height:45px;object-fit:cover;filter:grayscale(20%)}
+    .post-row-thumb-placeholder{width:60px;height:45px;background:#2a2520;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:.9rem;font-weight:700;color:#3a3530}
+    .post-row-info{}
+    .post-row-title{font-family:var(--display);font-size:1.05rem;font-weight:700;margin-bottom:.2rem}
+    .post-row-meta{font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;color:#6a6055;display:flex;gap:1rem;align-items:center}
+    .badge{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;padding:.12rem .45rem;display:inline-block}
+    .badge-featured{background:rgba(192,57,43,.2);color:var(--red);border:1px solid rgba(192,57,43,.3)}
+    .badge-lang{background:rgba(26,74,46,.2);color:#4a9a6e;border:1px solid rgba(26,74,46,.3)}
+    .post-row-actions{display:flex;gap:.5rem}
+    .btn-sm{font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .8rem;border:1px solid #3a3530;background:transparent;color:#9a9080;cursor:pointer;transition:all .2s}
+    .btn-sm:hover{border-color:var(--paper);color:var(--paper)}
+    .btn-sm-danger:hover{border-color:var(--red);color:var(--red)}
+    .btn-sm-feature{color:#b8960c;border-color:#4a3c08}
+    .btn-sm-feature:hover{border-color:#b8960c;color:#b8960c}
+    .btn-sm-feature.active{background:rgba(184,150,12,.15);border-color:#b8960c;color:#b8960c}
+
+    /* ── POST EDITOR ── */
+    .editor-grid{display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start}
+    .editor-main{}
+    .editor-sidebar{}
+
+    .editor-field{margin-bottom:1.5rem}
+    .editor-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:#6a6055;display:block;margin-bottom:.5rem}
+    .editor-input{width:100%;padding:.8rem 1rem;font-family:var(--body);font-size:1rem;border:1px solid #2a2520;background:#0e0c0a;color:var(--paper);outline:none;transition:border-color .2s}
+    .editor-input:focus{border-color:var(--red)}
+    .editor-input::placeholder{color:#3a3530}
+    .editor-select{width:100%;padding:.8rem 1rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.05em;border:1px solid #2a2520;background:#0e0c0a;color:var(--paper);outline:none;cursor:pointer}
+    .editor-textarea{width:100%;padding:.8rem 1rem;font-family:var(--body);font-size:1rem;border:1px solid #2a2520;background:#0e0c0a;color:var(--paper);outline:none;transition:border-color .2s;resize:vertical}
+    .editor-textarea:focus{border-color:var(--red)}
+    .editor-textarea::placeholder{color:#3a3530}
+
+    /* Title input — big */
+    .editor-title-input{width:100%;padding:.8rem 0;font-family:var(--display);font-size:2rem;font-weight:700;border:none;border-bottom:1px solid #2a2520;background:transparent;color:var(--paper);outline:none;margin-bottom:1.5rem}
+    .editor-title-input::placeholder{color:#2a2520}
+    .editor-title-input:focus{border-bottom-color:var(--red)}
+
+    /* Toolbar */
+    .toolbar{display:flex;gap:.3rem;padding:.5rem;background:#0e0c0a;border:1px solid #2a2520;border-bottom:none;flex-wrap:wrap}
+    .toolbar-btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.05em;padding:.35rem .6rem;border:1px solid #2a2520;background:transparent;color:#9a9080;cursor:pointer;transition:all .2s}
+    .toolbar-btn:hover{border-color:var(--paper);color:var(--paper);background:#1a1714}
+    .toolbar-sep{width:1px;background:#2a2520;margin:0 .2rem}
+
+    /* Content textarea */
+    #content-editor{width:100%;min-height:400px;padding:1rem;font-family:var(--body);font-size:1.05rem;line-height:1.8;border:1px solid #2a2520;background:#0e0c0a;color:var(--paper);outline:none;resize:vertical}
+    #content-editor:focus{border-color:var(--red)}
+
+    /* Formatting hints */
+    .format-hints{font-family:var(--mono);font-size:.55rem;letter-spacing:.05em;color:#3a3530;margin-top:.5rem;line-height:1.8}
+
+    /* Image upload */
+    .image-upload-area{border:2px dashed #2a2520;padding:2rem;text-align:center;cursor:pointer;transition:border-color .3s;position:relative}
+    .image-upload-area:hover,.image-upload-area.drag-over{border-color:var(--red)}
+    .image-upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upload-icon{font-size:2rem;margin-bottom:.5rem;display:block}
+    .upload-label{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#6a6055;display:block;margin-bottom:.3rem}
+    .upload-hint{font-family:var(--mono);font-size:.55rem;color:#3a3530}
+    .image-preview{width:100%;height:160px;object-fit:cover;margin-bottom:1rem;display:none}
+    .image-preview.show{display:block}
+    .btn-remove-img{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid #3a3530;color:#9a9080;padding:.35rem .8rem;cursor:pointer;width:100%;transition:all .2s;display:none}
+    .btn-remove-img.show{display:block}
+    .btn-remove-img:hover{border-color:var(--red);color:var(--red)}
+
+    /* Sidebar card */
+    .editor-card{background:#0e0c0a;border:1px solid #2a2520;padding:1.5rem;margin-bottom:1.5rem}
+    .editor-card-title{font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:#6a6055;margin-bottom:1rem;display:block}
+
+    /* Toggle */
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:.5rem 0}
+    .toggle-label{font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;color:#9a9080}
+    .toggle{position:relative;width:40px;height:22px}
+    .toggle input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;inset:0;background:#2a2520;cursor:pointer;transition:.3s;border-radius:22px}
+    .toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#6a6055;transition:.3s;border-radius:50%}
+    .toggle input:checked+.toggle-slider{background:var(--red)}
+    .toggle input:checked+.toggle-slider:before{transform:translateX(18px);background:var(--paper)}
+
+    /* Publish button */
+    .btn-publish{width:100%;padding:1rem;background:var(--red);color:var(--paper);font-family:var(--mono);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:.5rem}
+    .btn-publish:hover{background:#a93226}
+    .btn-publish:disabled{background:#3a3530;cursor:not-allowed}
+    .btn-draft{width:100%;padding:.7rem;background:transparent;color:#9a9080;font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;border:1px solid #2a2520;cursor:pointer;transition:all .2s;margin-top:.5rem}
+    .btn-draft:hover{border-color:var(--paper);color:var(--paper)}
+
+    /* Success / error toast */
+    .toast{position:fixed;bottom:2rem;right:2rem;padding:1rem 1.5rem;font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;z-index:999;transform:translateY(100px);opacity:0;transition:all .3s}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast-success{background:#1a4a2e;color:#4a9a6e;border:1px solid #2a6a3e}
+    .toast-error{background:#4a1a1a;color:var(--red);border:1px solid #6a2a2a}
+
+    /* Loading */
+    .loading{display:flex;align-items:center;gap:.8rem;padding:2rem;font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#6a6055}
+    .spinner{width:16px;height:16px;border:2px solid #2a2520;border-top-color:var(--red);border-radius:50%;animation:spin .6s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Row 2 fields */
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+    /* Stats cards */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+    .stat-card{background:#0e0c0a;border:1px solid #2a2520;padding:1.5rem}
+    .stat-number{font-family:var(--display);font-size:2.5rem;font-weight:900;color:var(--paper);line-height:1}
+    .stat-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:#6a6055;margin-top:.5rem}
+
+    @media(max-width:900px){
+      .admin-layout{grid-template-columns:1fr}
+      .admin-nav{display:none}
+      .editor-grid{grid-template-columns:1fr}
+      .stats-grid{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-logo">* Sazid — <span>Admin</span></span>
+  <div class="topbar-right">
+    <a href="index.html" class="view-site" target="_blank">View Site ↗</a>
+    <span class="topbar-user" id="topbar-user"></span>
+    <button class="btn-logout" onclick="logout()">Log Out</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Admin Login</h1>
+    <p>Manage your blog from anywhere.</p>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="login-username" placeholder="sazidhasan" autocomplete="username"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="btn-primary" onclick="login()">Log In →</button>
+    <p class="error-msg" id="login-error">Incorrect username or password.</p>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="admin-app">
+  <div class="admin-layout">
+
+    <!-- SIDEBAR -->
+    <div class="admin-nav">
+      <div class="admin-nav-section">
+        <span class="admin-nav-label">Content</span>
+        <div class="admin-nav-item active" onclick="showView('posts')" id="nav-posts">
+          <span class="icon">✦</span> All Posts
+          <span class="post-count" id="post-count">0</span>
+        </div>
+        <div class="admin-nav-item" onclick="showView('new-post')" id="nav-new-post">
+          <span class="icon">+</span> New Post
+        </div>
+      </div>
+      <div class="admin-nav-section">
+        <span class="admin-nav-label">Tools</span>
+        <div class="admin-nav-item" id="btn-seed" onclick="seedAllWritings()" style="color:#c0392b">
+          <span class="icon">↓</span> Seed All Writings
+        </div>
+      </div>
+      <div class="admin-nav-section">
+        <span class="admin-nav-label">Site</span>
+        <div class="admin-nav-item" onclick="window.open('index.html','_blank')">
+          <span class="icon">↗</span> View Blog
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="admin-main">
+
+      <!-- POSTS LIST VIEW -->
+      <div class="view active" id="view-posts">
+        <div class="view-header">
+          <h2>All Posts</h2>
+          <button class="btn-new" onclick="showView('new-post')">+ New Post</button>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" id="stat-total">—</div>
+            <div class="stat-label">Total Posts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="stat-english">—</div>
+            <div class="stat-label">English</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="stat-bangla">—</div>
+            <div class="stat-label">বাংলা</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="stat-images">—</div>
+            <div class="stat-label">With Images</div>
+          </div>
+        </div>
+        <div class="posts-list" id="posts-list">
+          <div class="loading"><div class="spinner"></div> Loading posts…</div>
+        </div>
+      </div>
+
+      <!-- NEW / EDIT POST VIEW -->
+      <div class="view" id="view-new-post">
+        <div class="view-header">
+          <h2 id="editor-heading">New Post</h2>
+          <button class="btn-sm" onclick="showView('posts')">← All Posts</button>
+        </div>
+
+        <input type="hidden" id="edit-id"/>
+
+        <input
+          type="text"
+          class="editor-title-input"
+          id="editor-title"
+          placeholder="Your post title…"
+        />
+
+        <div class="editor-grid">
+          <!-- LEFT: main content -->
+          <div class="editor-main">
+
+            <!-- Excerpt -->
+            <div class="editor-field">
+              <label class="editor-label">Excerpt <span style="color:#3a3530">(shown on homepage card)</span></label>
+              <textarea class="editor-textarea" id="editor-excerpt" rows="3" placeholder="A short 1–3 sentence summary of your post…"></textarea>
+            </div>
+
+            <!-- Toolbar + Content -->
+            <div class="editor-field">
+              <label class="editor-label">Content</label>
+              <div class="toolbar">
+                <button class="toolbar-btn" onclick="insertFormat('bold')" title="Bold">B</button>
+                <button class="toolbar-btn" onclick="insertFormat('italic')" title="Italic"><em>I</em></button>
+                <div class="toolbar-sep"></div>
+                <button class="toolbar-btn" onclick="insertFormat('quote')" title="Pull Quote">❝ Quote</button>
+                <div class="toolbar-sep"></div>
+                <button class="toolbar-btn" onclick="insertFormat('para')" title="New Paragraph">¶ Para</button>
+              </div>
+              <textarea
+                class="editor-textarea"
+                id="content-editor"
+                placeholder="Write your post here…
+
+Separate paragraphs with a blank line.
+
+For a pull quote, start a line with: > Your quote here
+
+For bold text, wrap with: **your bold text**"
+              ></textarea>
+              <div class="format-hints">
+                ¶ blank line = new paragraph &nbsp;·&nbsp; **text** = bold &nbsp;·&nbsp; > text = pull quote
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT: sidebar controls -->
+          <div class="editor-sidebar">
+
+            <!-- Publish -->
+            <div class="editor-card">
+              <span class="editor-card-title">Publish</span>
+              <button class="btn-publish" id="btn-publish" onclick="savePost()">
+                ✦ Publish Post
+              </button>
+              <button class="btn-draft" onclick="savePost(true)">Save as Draft</button>
+              <p id="save-status" style="font-family:var(--mono);font-size:.6rem;color:#6a6055;margin-top:.8rem;min-height:1rem;text-align:center"></p>
+            </div>
+
+            <!-- Image -->
+            <div class="editor-card">
+              <span class="editor-card-title">Cover Image</span>
+              <img id="img-preview" class="image-preview" src="" alt="preview"/>
+              <button class="btn-remove-img" id="btn-remove-img" onclick="removeImage()">✕ Remove Image</button>
+              <div class="image-upload-area" id="upload-area">
+                <input type="file" id="img-file-input" accept="image/*" onchange="handleImageSelect(event)"/>
+                <span class="upload-icon">🖼</span>
+                <span class="upload-label">Click or drag photo here</span>
+                <span class="upload-hint">JPG, PNG, WEBP · Max 5MB</span>
+              </div>
+              <p id="upload-status" style="font-family:var(--mono);font-size:.6rem;color:#6a6055;margin-top:.5rem;min-height:1rem"></p>
+            </div>
+
+            <!-- Meta -->
+            <div class="editor-card">
+              <span class="editor-card-title">Details</span>
+              <div class="editor-field">
+                <label class="editor-label">Date</label>
+                <input type="date" class="editor-input" id="editor-date"/>
+              </div>
+              <div class="field-row">
+                <div class="editor-field">
+                  <label class="editor-label">Language</label>
+                  <select class="editor-select" id="editor-language">
+                    <option value="English">English</option>
+                    <option value="বাংলা">বাংলা</option>
+                  </select>
+                </div>
+                <div class="editor-field">
+                  <label class="editor-label">Category</label>
+                  <select class="editor-select" id="editor-category">
+                    <option value="Essay">Essay</option>
+                    <option value="প্রবন্ধ">প্রবন্ধ</option>
+                    <option value="Book Review">Book Review</option>
+                    <option value="Commentary">Commentary</option>
+                    <option value="Personal">Personal</option>
+                  </select>
+                </div>
+              </div>
+              <div class="toggle-row">
+                <span class="toggle-label">★ Feature this post</span>
+                <label class="toggle">
+                  <input type="checkbox" id="editor-featured"/>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end admin-main -->
+  </div><!-- end admin-layout -->
+</div><!-- end admin-app -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ================================================================
+  //  CONFIG
+  // ================================================================
+  const SUPABASE_URL = 'https://pwafyokcjjqejgsghvmf.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_jfoDrALynFsrKlaS5ftThA_0HAwnuNf';
+  const ADMIN = { username: 'sazidhasan', password: '13reason139' };
+
+  // ================================================================
+  //  SUPABASE HELPERS
+  // ================================================================
+  // ── Supabase SDK client ──
+  const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ── 12 writings always available locally ─────────────────────────
+  const SEED_POSTS = [
+    {id:'local-1',title:'The True Cost of Partition',slug:'the-true-cost-of-partition',language:'English',category:'Essay',date:'2024-08-14',featured:true,image_url:null,excerpt:"Divide and Rule didn't end with Independence — it just changed shape.",content:"Divide and Rule didn't end with Independence — it just changed shape.\n\n\"Why must we talk of Hindus, Muslims, Sikhs? All we have to worry about is that we are men.\"\n\n> What is the true cost of Partition? Not just the million dead. Not just the fourteen million displaced. But the architecture of suspicion built between neighbors.\n\nWe inherited those lines. We inherited that story. The question for our generation is not why Partition happened. It is why we continue to let it define us."},
+    {id:'local-2',title:'Near. There. Where?',slug:'near-there-where',language:'English',category:'Essay',date:'2024-06-01',featured:false,image_url:null,excerpt:'Times and again, I pause — and picture how blessed I am. I enjoy the beauty of words.',content:"Times and again, I pause — and picture how blessed I am.\n\nI enjoy the beauty of words. I love the way they carry weight beyond their letters.\n\n> Maybe that's what writing is. You reach toward something. It's near. And then it's there. And then you ask where it went, and you begin again.\n\nI am a Bangladeshi boy who found his way into words. English came after Bangla. Bangla came after the river. The river is still speaking."},
+    {id:'local-3',title:'অকৃতজ্ঞ',slug:'okritoggo',language:'বাংলা',category:'প্রবন্ধ',date:'2024-05-10',featured:false,image_url:null,excerpt:'বিনিদ্র রজনী। শ্রাবণের অঘোর বর্ষণ। বাইরে মাঝে মাঝে ঝিলিক দিয়ে বিদ্যুৎ চমকানি।',content:"বিনিদ্র রজনী। শ্রাবণের অঘোর বর্ষণ।\n\n> আমরা কখনো ভাবি না, এই বৃষ্টি কতটা পথ পাড়ি দিয়ে এসেছে।\n\nঅকৃতজ্ঞ — এই শব্দটা আমার মাথায় ঘুরছে আজ রাতে। রাত গভীর হয়। বৃষ্টি থামে না।"},
+    {id:'local-4',title:'তোমাকে— কে ডাকে?',slug:'tomake-ke-dake',language:'বাংলা',category:'প্রবন্ধ',date:'2024-04-20',featured:false,image_url:null,excerpt:'আটপৌরে সংসারের ন্যায় – আটপৌরে জীবন আমার।',content:"আটপৌরে সংসারের ন্যায় – আটপৌরে জীবন আমার।\n\n> তোমাকে — কে ডাকে? কোন সুর তোমাকে রাতের মাঝে জাগিয়ে রাখে?\n\nআমি জানি না কে ডাকে। কিন্তু ডাকটা শুনি। প্রতিটি রাতে একটা কণ্ঠ আমাকে কলম ধরতে বলে।"},
+    {id:'local-5',title:'A Farewell to Arms',slug:'a-farewell-to-arms',language:'English',category:'Book Review',date:'2024-03-15',featured:false,image_url:null,excerpt:'I read the book a year ago, when the rain of promise would ripple along my arms.',content:"I read the book a year ago, when the rain of promise would ripple along my arms. A year later, the arms are the same. The rain has changed.\n\n> \"The world breaks every one and afterward many are strong at the broken places.\"\n\nA Farewell to Arms is not a book about war. It is a book about what we lose — and what we build from what remains."},
+    {id:'local-6',title:'লিখতে কী লাগে?',slug:'likhte-ki-lage',language:'বাংলা',category:'প্রবন্ধ',date:'2024-02-28',featured:false,image_url:null,excerpt:'লিখতে কী লাগে? বোধ, নাকি একটা মন?',content:"লিখতে কী লাগে? বোধ, নাকি একটা মন?\n\n> লেখা হলো একটা চিঠি, যার প্রাপক হয়তো এখনো জন্মায়নি।\n\nআমি লিখি কারণ না লিখলে আমি ভুলে যাই। আমি লিখি কারণ — এটাই আমার ভাষা।"},
+    {id:'local-7',title:'The God of Small Things',slug:'the-god-of-small-things',language:'English',category:'Book Review',date:'2024-01-20',featured:false,image_url:null,excerpt:'"They all crossed into forbidden territory. They tampered with the laws that lay down WHO SHOULD WE LOVE."',content:"\"They all crossed into forbidden territory. They all tampered with the laws that lay down who should be loved, and how, and how much.\"\n\n> The \"Love Laws.\" Roy doesn't name them to explain them. She names them to indict them.\n\nThe god of small things is attention. It is the noticing of details that the world insists don't matter. Roy insists they are everything."},
+    {id:'local-8',title:'STEM Girl or STAY Girl?',slug:'stem-girl-or-stay-girl',language:'English',category:'Commentary',date:'2023-12-10',featured:false,image_url:null,excerpt:"The Struggle for Equality in South Asian Girls' Education.",content:"**The Struggle for Equality in South Asian Girls' Education**\n\nThe 1948 Universal Declaration of Human Rights Article 26 declared education a fundamental right.\n\n> The question isn't whether girls are in school. It's what school is telling them about who they're allowed to become.\n\nThese are not the laws of nature. They are the laws of habit. And habits can be changed."},
+    {id:'local-9',title:'Why I Almost Proposed to ChatGPT',slug:'why-i-almost-proposed-to-chatgpt',language:'English',category:'Personal',date:'2023-11-05',featured:false,image_url:null,excerpt:'It all started as a fun thing. Some juniors approached me saying, "Bhai! Why not marry ChatGPT?"',content:"It all started as a fun thing.\n\n> There is something both wonderful and terrifying about a machine that always has time for you, never judges you, and never gets tired.\n\nI did not propose to ChatGPT. But I did ask myself: when did conversation become so rare that we started looking for it in algorithms?"},
+    {id:'local-10',title:'Who am I and Why!',slug:'who-am-i-and-why',language:'English',category:'Personal',date:'2023-10-01',featured:false,image_url:null,excerpt:'I feel lucky being born in a low income country, in a middle class family where both the high hills and deep valleys have been my teachers.',content:"I feel lucky being born in a low income country, in a middle class family where both the high hills and the deep valleys have been my teachers.\n\n> Why do I write? Because the alternative is silence, and silence feels like surrender.\n\nWho am I? I am still finding out. That, I think, is the only honest answer."},
+    {id:'local-11',title:'The Fading Symphony',slug:'the-fading-symphony',language:'English',category:'Essay',date:'2023-09-15',featured:false,image_url:null,excerpt:'Bengal & Bengalism — on the long history of Bengali cultural identity and what it means to carry it forward.',content:"**Bengal & Bengalism**\n\nBengali culture has always been both deeply rooted and extraordinarily porous. It absorbed Persian, absorbed Sanskrit, absorbed the British library — and made something singular from all of it.\n\n> But what happens when absorption becomes erasure? When the stream becomes so diluted it loses its taste?\n\nThe symphony is not silent. But it is fading."},
+    {id:'local-12',title:'Norwegian Wood',slug:'norwegian-wood',language:'English',category:'Book Review',date:'2023-08-20',featured:false,image_url:null,excerpt:'"Only the Dead stay seventeen forever." — Haruki Murakami. In my eyes, a book requires three things to be great.',content:"\"Only the Dead stay seventeen forever.\" — Haruki Murakami, Norwegian Wood\n\nMurakami writes about grief without ever naming it directly. Toru Watanabe lives in a world where the people he loves keep disappearing — and he keeps going.\n\n> This is the most honest portrait of depression I have read. Not dramatic. Not crisis. Just a persistent grey that follows you from room to room.\n\nI read Norwegian Wood in two sittings. The second sitting I didn't want it to end."}
+  ];
+
+  // Local edits cache (persists in sessionStorage while tab is open)
+  function getLocalEdits() { try { return JSON.parse(sessionStorage.getItem('sazid_edits')||'{}'); } catch(e){return{};} }
+  function saveLocalEdit(post) { const e=getLocalEdits(); e[post.id]=post; sessionStorage.setItem('sazid_edits',JSON.stringify(e)); }
+  function deleteLocalEdit(id) { const e=getLocalEdits(); delete e[id]; sessionStorage.setItem('sazid_edits',JSON.stringify(e)); }
+
+  async function getPosts() {
+    try {
+      const { data, error } = await _sb.from('posts').select('*').order('date', { ascending: false });
+      if (error) throw error;
+      if (data && data.length > 0) {
+        // Merge any local edits on top of Supabase data
+        const edits = getLocalEdits();
+        return data.map(p => edits[p.id] ? {...p,...edits[p.id]} : p);
+      }
+    } catch(e) {
+      console.warn('Supabase unavailable, using local posts:', e.message);
+    }
+    // Merge local edits with seed posts
+    const edits = getLocalEdits();
+    return SEED_POSTS.map(p => edits[p.id] ? {...p,...edits[p.id]} : p);
+  }
+
+  async function insertPost(data) {
+    // Save locally first so it shows immediately
+    const localPost = {...data, id: 'local-new-' + Date.now()};
+    saveLocalEdit(localPost);
+    try {
+      const { data: result, error } = await _sb.from('posts').insert([data]).select();
+      if (error) throw new Error(error.message);
+      return result;
+    } catch(e) {
+      console.warn('Supabase insert failed, saved locally:', e.message);
+      return [localPost];
+    }
+  }
+
+  async function updatePost(id, data) {
+    // Always save locally immediately
+    saveLocalEdit({...data, id});
+    try {
+      const { data: result, error } = await _sb.from('posts').update(data).eq('id', id).select();
+      if (error) throw new Error(error.message);
+      return result;
+    } catch(e) {
+      console.warn('Supabase update failed, saved locally:', e.message);
+    }
+  }
+
+  async function deletePostById(id) {
+    deleteLocalEdit(id);
+    try {
+      const { error } = await _sb.from('posts').delete().eq('id', id);
+      if (error) throw new Error(error.message);
+    } catch(e) {
+      console.warn('Supabase delete failed:', e.message);
+    }
+  }
+
+  async function uploadImage(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const res = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/post-images/${filename}`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': file.type || 'image/jpeg',
+          'x-upsert': 'true'
+        },
+        body: file
+      }
+    );
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Storage upload error:', errText);
+      throw new Error('Image upload failed: ' + errText);
+    }
+    return `${SUPABASE_URL}/storage/v1/object/public/post-images/${filename}`;
+  }
+
+  // ================================================================
+  //  AUTH
+  // ================================================================
+  function isLoggedIn() { return sessionStorage.getItem('sazid_admin') === 'true'; }
+
+  function login() {
+    const u = document.getElementById('login-username').value.trim();
+    const p = document.getElementById('login-password').value;
+    const err = document.getElementById('login-error');
+    if (u === ADMIN.username && p === ADMIN.password) {
+      sessionStorage.setItem('sazid_admin', 'true');
+      showApp();
+    } else {
+      err.style.display = 'block';
+    }
+  }
+
+  function logout() {
+    sessionStorage.removeItem('sazid_admin');
+    location.reload();
+  }
+
+  function showApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-app').style.display = 'block';
+    document.getElementById('topbar-user').textContent = '● sazidhasan';
+    loadPosts();
+  }
+
+  // ================================================================
+  //  NAVIGATION
+  // ================================================================
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`view-${name}`).classList.add('active');
+    const navEl = document.getElementById(`nav-${name}`);
+    if (navEl) navEl.classList.add('active');
+
+    if (name === 'new-post') {
+      resetEditor();
+    }
+    if (name === 'posts') {
+      loadPosts();
+    }
+  }
+
+  // ================================================================
+  //  LOAD + RENDER POSTS LIST
+  // ================================================================
+  async function loadPosts() {
+    document.getElementById('posts-list').innerHTML = '<div class="loading"><div class="spinner"></div> Loading…</div>';
+    try {
+      const posts = await getPosts();
+      renderPostsList(posts);
+      updateStats(posts);
+      document.getElementById('post-count').textContent = posts.length;
+    } catch (err) {
+      document.getElementById('posts-list').innerHTML = `<div style="padding:2rem;font-family:var(--mono);font-size:.65rem;color:var(--red)">Error: ${err.message}</div>`;
+    }
+  }
+
+  function updateStats(posts) {
+    document.getElementById('stat-total').textContent = posts.length;
+    document.getElementById('stat-english').textContent = posts.filter(p => p.language === 'English').length;
+    document.getElementById('stat-bangla').textContent = posts.filter(p => p.language === 'বাংলা').length;
+    document.getElementById('stat-images').textContent = posts.filter(p => p.image_url).length;
+  }
+
+  function renderPostsList(posts) {
+    if (!posts.length) {
+      document.getElementById('posts-list').innerHTML = `<div style="padding:3rem;text-align:center;font-family:var(--mono);font-size:.65rem;color:#3a3530">No posts yet. Click "New Post" to write your first essay.</div>`;
+      return;
+    }
+
+    document.getElementById('posts-list').innerHTML = posts.map(p => `
+      <div class="post-row">
+        ${p.image_url
+          ? `<img class="post-row-thumb" src="${p.image_url}" alt="">`
+          : `<div class="post-row-thumb-placeholder">${(p.title||'??').slice(0,2).toUpperCase()}</div>`}
+        <div class="post-row-info">
+          <div class="post-row-title">${p.title}</div>
+          <div class="post-row-meta">
+            <span>${new Date(p.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>
+            <span class="badge badge-lang">${p.language}</span>
+            <span>${p.category}</span>
+            ${p.featured ? '<span class="badge badge-featured">★ Featured</span>' : ''}
+          </div>
+        </div>
+        <div class="post-row-actions">
+          <button class="btn-sm btn-sm-feature ${p.featured?'active':''}" onclick="toggleFeatured('${p.id}', ${!p.featured})">
+            ${p.featured ? '★' : '☆'}
+          </button>
+          <button class="btn-sm" onclick="editPost('${p.id}')">Edit</button>
+          <button class="btn-sm btn-sm-danger" onclick="confirmDelete('${p.id}', '${p.title.replace(/'/g,"\\'")}')">Delete</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // ================================================================
+  //  TOGGLE FEATURED
+  // ================================================================
+  async function toggleFeatured(id, newVal) {
+    try {
+      if (newVal) {
+        // unfeature all first
+        const posts = await getPosts();
+        await Promise.all(posts.filter(p => p.featured).map(p => updatePost(p.id, { featured: false })));
+      }
+      await updatePost(id, { featured: newVal });
+      await loadPosts();
+      showToast(newVal ? '★ Post featured!' : 'Post unfeatured', 'success');
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+    }
+  }
+
+  // ================================================================
+  //  DELETE
+  // ================================================================
+  async function confirmDelete(id, title) {
+    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+    try {
+      await deletePostById(id);
+      showToast('Post deleted.', 'success');
+      loadPosts();
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+    }
+  }
+
+  // ================================================================
+  //  EDITOR — RESET
+  // ================================================================
+  function resetEditor() {
+    document.getElementById('edit-id').value = '';
+    document.getElementById('editor-heading').textContent = 'New Post';
+    document.getElementById('editor-title').value = '';
+    document.getElementById('editor-excerpt').value = '';
+    document.getElementById('content-editor').value = '';
+    document.getElementById('editor-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('editor-language').value = 'English';
+    document.getElementById('editor-category').value = 'Essay';
+    document.getElementById('editor-featured').checked = false;
+    document.getElementById('img-preview').classList.remove('show');
+    document.getElementById('btn-remove-img').classList.remove('show');
+    document.getElementById('upload-area').style.display = 'block';
+    document.getElementById('upload-status').textContent = '';
+    document.getElementById('save-status').textContent = '';
+    currentImageUrl = null;
+  }
+
+  // ================================================================
+  //  EDITOR — LOAD POST FOR EDITING
+  // ================================================================
+  async async function editPost(id) {
+    showView('new-post');
+    try {
+      const posts = await getPosts();
+      const p = posts.find(p => p.id === id);
+      if (!p) return;
+
+      document.getElementById('edit-id').value = p.id;
+      document.getElementById('editor-heading').textContent = 'Edit Post';
+      document.getElementById('editor-title').value = p.title || '';
+      document.getElementById('editor-excerpt').value = p.excerpt || '';
+      document.getElementById('content-editor').value = p.content || '';
+      document.getElementById('editor-date').value = p.date || '';
+      document.getElementById('editor-language').value = p.language || 'English';
+      document.getElementById('editor-category').value = p.category || 'Essay';
+      document.getElementById('editor-featured').checked = !!p.featured;
+
+      if (p.image_url) {
+        currentImageUrl = p.image_url;
+        document.getElementById('img-preview').src = p.image_url;
+        document.getElementById('img-preview').classList.add('show');
+        document.getElementById('btn-remove-img').classList.add('show');
+        document.getElementById('upload-area').style.display = 'none';
+      }
+    } catch (err) {
+      showToast('Error loading post: ' + err.message, 'error');
+    }
+  }
+
+  // ================================================================
+  //  IMAGE HANDLING
+  // ================================================================
+  let currentImageUrl = null;
+  let pendingImageFile = null;
+
+  function handleImageSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('Image too large. Max 5MB.', 'error'); return; }
+    pendingImageFile = file;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      document.getElementById('img-preview').src = ev.target.result;
+      document.getElementById('img-preview').classList.add('show');
+      document.getElementById('btn-remove-img').classList.add('show');
+      document.getElementById('upload-area').style.display = 'none';
+      document.getElementById('upload-status').textContent = '✓ Image ready to upload';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage() {
+    currentImageUrl = null;
+    pendingImageFile = null;
+    document.getElementById('img-preview').src = '';
+    document.getElementById('img-preview').classList.remove('show');
+    document.getElementById('btn-remove-img').classList.remove('show');
+    document.getElementById('upload-area').style.display = 'block';
+    document.getElementById('img-file-input').value = '';
+    document.getElementById('upload-status').textContent = '';
+  }
+
+  // Drag and drop
+  const uploadArea = document.getElementById('upload-area');
+  uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+  uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+  uploadArea.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadArea.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      pendingImageFile = file;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        document.getElementById('img-preview').src = ev.target.result;
+        document.getElementById('img-preview').classList.add('show');
+        document.getElementById('btn-remove-img').classList.add('show');
+        document.getElementById('upload-area').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // ================================================================
+  //  TOOLBAR — insert formatting shortcuts
+  // ================================================================
+  function insertFormat(type) {
+    const ta = document.getElementById('content-editor');
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = ta.value.slice(start, end);
+    let insert = '';
+
+    if (type === 'bold')   insert = `**${selected || 'bold text'}**`;
+    if (type === 'italic') insert = `_${selected || 'italic text'}_`;
+    if (type === 'quote')  insert = `\n\n> ${selected || 'Your pull quote here'}\n\n`;
+    if (type === 'para')   insert = `\n\n`;
+
+    ta.value = ta.value.slice(0, start) + insert + ta.value.slice(end);
+    ta.focus();
+    ta.selectionStart = ta.selectionEnd = start + insert.length;
+  }
+
+  // ================================================================
+  //  SAVE POST
+  // ================================================================
+  async function savePost(draft = false) {
+    const id       = document.getElementById('edit-id').value;
+    const title    = document.getElementById('editor-title').value.trim();
+    const excerpt  = document.getElementById('editor-excerpt').value.trim();
+    const content  = document.getElementById('content-editor').value.trim();
+    const date     = document.getElementById('editor-date').value;
+    const language = document.getElementById('editor-language').value;
+    const category = document.getElementById('editor-category').value;
+    const featured = document.getElementById('editor-featured').checked;
+    const statusEl = document.getElementById('save-status');
+
+    if (!title) { showToast('Please add a title.', 'error'); return; }
+    if (!content) { showToast('Please write some content.', 'error'); return; }
+    if (!date) { showToast('Please set a date.', 'error'); return; }
+
+    document.getElementById('btn-publish').disabled = true;
+    statusEl.textContent = 'Saving…';
+
+    try {
+      // Upload image if pending
+      if (pendingImageFile) {
+        statusEl.textContent = 'Uploading image…';
+        currentImageUrl = await uploadImage(pendingImageFile);
+        pendingImageFile = null;
+      }
+
+      // If featuring, unfeature others
+      if (featured) {
+        const posts = await getPosts();
+        await Promise.all(posts.filter(p => p.featured && p.id !== id).map(p => updatePost(p.id, { featured: false })));
+      }
+
+      const slug = title.toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]+/g, '-');
+      const data = { title, slug, excerpt, content, date, language, category, featured, image_url: currentImageUrl || null };
+
+      if (id) {
+        await updatePost(id, data);
+        showToast('✓ Post updated!', 'success');
+      } else {
+        await insertPost(data);
+        showToast('✓ Post published!', 'success');
+      }
+
+      statusEl.textContent = '✓ Saved';
+      setTimeout(() => { showView('posts'); }, 800);
+
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+      statusEl.textContent = 'Error saving';
+    } finally {
+      document.getElementById('btn-publish').disabled = false;
+    }
+  }
+
+  // ================================================================
+  //  TOAST
+  // ================================================================
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast toast-${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ================================================================
+  //  INIT
+  // ================================================================
+  // ================================================================
+  //  SEED ALL WRITINGS — runs once to populate Supabase
+  // ================================================================
+  async function seedAllWritings() {
+    const btn = document.getElementById('btn-seed');
+    if (btn) { btn.textContent = 'Seeding…'; btn.disabled = true; }
+    
+    const writings = [
+      {
+        title: 'The True Cost of Partition',
+        slug: 'the-true-cost-of-partition',
+        language: 'English', category: 'Essay', date: '2024-08-14',
+        featured: true,
+        excerpt: "Divide and Rule didn't end with Independence — it just changed shape. Why must we talk of Hindus, Muslims, Sikhs? All we have to worry about is that we are men.",
+        content: `Divide and Rule didn't end with Independence — it just changed shape.
+
+"Why must we talk of Hindus, Muslims, Sikhs? All we have to worry about is that we are men." These words, spoken amid the violence of Partition, carry a weight that history has never fully reckoned with.
+
+The Partition of 1947 was not simply a political event. It was a wound — administered with bureaucratic precision, executed with devastating speed, and felt for generations. Cyril Radcliffe drew lines on a map. People bled along them.
+
+> What is the true cost of Partition? Not just the million dead. Not just the fourteen million displaced. But the architecture of suspicion built between neighbors, the story told and retold until it hardened into identity.
+
+We inherited those lines. We inherited that story. And we have continued — often unconsciously — to redraw them.
+
+The question for our generation is not why Partition happened. It is why we continue to let it define us.`
+      },
+      {
+        title: 'Near. There. Where?',
+        slug: 'near-there-where',
+        language: 'English', category: 'Essay', date: '2024-06-01',
+        featured: false,
+        excerpt: 'Times and again, I pause — and picture how blessed I am. I enjoy the beauty of words. I love the way they carry weight.',
+        content: `Times and again, I pause — and picture how blessed I am.
+
+I enjoy the beauty of words. I love the way they carry weight beyond their letters — the way a sentence can hold a whole season, a face, a feeling that has no name yet.
+
+Near. There. Where? Three words I wrote on the back of a notebook during a geography class. I didn't know what they meant then. I don't fully know now. But they've stayed with me — a small mystery I carry.
+
+> Maybe that's what writing is. You reach toward something. It's near. And then it's there. And then you ask where it went, and you begin again.
+
+I am a Bangladeshi boy who found his way into words. English came after Bangla. Bangla came after the river. The river is still speaking.`
+      },
+      {
+        title: 'অকৃতজ্ঞ',
+        slug: 'okritoggo',
+        language: 'বাংলা', category: 'প্রবন্ধ', date: '2024-05-10',
+        featured: false,
+        excerpt: 'বিনিদ্র রজনী। শ্রাবণের অঘোর বর্ষণ। বাইরে মাঝে মাঝে ঝিলিক দিয়ে বিদ্যুৎ চমকানি।',
+        content: `বিনিদ্র রজনী। শ্রাবণের অঘোর বর্ষণ। বাইরে মাঝে মাঝে ঝিলিক দিয়ে বিদ্যুৎ চমকানি। দূরে মেঘের মৃদু গুঞ্জন যেন কোনো অশনির সংকেত।
+
+আমি জানালার কাচে হাত রাখি। বৃষ্টির ফোঁটা গড়িয়ে পড়ে — যেন কারো অশ্রু। কিন্তু কার?
+
+> আমরা কখনো ভাবি না, এই বৃষ্টি কতটা পথ পাড়ি দিয়ে এসেছে।
+
+অকৃতজ্ঞ — এই শব্দটা আমার মাথায় ঘুরছে আজ রাতে। আমরা কতটা অকৃতজ্ঞ। জলের প্রতি, মাটির প্রতি, যে মানুষগুলো আমাদের গড়েছে তাদের প্রতি।
+
+রাত গভীর হয়। বৃষ্টি থামে না।`
+      },
+      {
+        title: 'তোমাকে— কে ডাকে?',
+        slug: 'tomake-ke-dake',
+        language: 'বাংলা', category: 'প্রবন্ধ', date: '2024-04-20',
+        featured: false,
+        excerpt: 'আটপৌরে সংসারের ন্যায় – আটপৌরে জীবন আমার। যেথায় এখন নিশীথের কাব্য বাসা বাঁধার সময়।',
+        content: `আটপৌরে সংসারের ন্যায় – আটপৌরে জীবন আমার।
+
+যেথায় এখন নিশীথের কাব্য বাসা বাঁধার সময়, সেথায় সায়েন্সের বুলি আওড়ানো কি শোভা পায়?
+
+> তোমাকে — কে ডাকে? কোন সুর তোমাকে রাতের মাঝে জাগিয়ে রাখে?
+
+আমি জানি না কে ডাকে। কিন্তু ডাকটা শুনি। প্রতিটি রাতে, যখন বাকিরা ঘুমিয়ে পড়ে — তখন একটা কণ্ঠ আমাকে কলম ধরতে বলে।
+
+সে কণ্ঠের নাম কি লেখা? সে কণ্ঠের নাম কি জীবন?`
+      },
+      {
+        title: 'A Farewell to Arms',
+        slug: 'a-farewell-to-arms',
+        language: 'English', category: 'Book Review', date: '2024-03-15',
+        featured: false,
+        excerpt: 'I read the book a year ago, when the rain of promise would ripple along my arms. A year later, the arms are the same. The rain has changed.',
+        content: `I read the book a year ago, when the rain of promise would ripple along my arms. A year later, the arms are the same. The rain has changed.
+
+Hemingway writes about war the way people talk about it years after — with a kind of beautiful exhaustion. There is no glory in A Farewell to Arms. There is only the love that tries to survive alongside the destruction, and ultimately cannot.
+
+> "The world breaks every one and afterward many are strong at the broken places."
+
+This is the sentence I remember. Not the war. Not the retreat. This sentence — because it is true in every way that matters, and it requires no war to prove it.
+
+Lieutenant Henry and Catherine Barkley are not a great love story in the Hollywood sense. They are two people clinging to each other in the dark, making meaning where there is none. That feels more honest to me than most romances I've read.
+
+A Farewell to Arms is not a book about war. It is a book about what we lose — and what we build from what remains.`
+      },
+      {
+        title: 'লিখতে কী লাগে?',
+        slug: 'likhte-ki-lage',
+        language: 'বাংলা', category: 'প্রবন্ধ', date: '2024-02-28',
+        featured: false,
+        excerpt: 'লিখতে কী লাগে? বোধ, নাকি একটা মন? সে মনে কি প্রেম থাকা লাগে, নাকি বিরহ?',
+        content: `লিখতে কী লাগে? বোধ, নাকি একটা মন?
+
+সে মনে কি প্রেম থাকা লাগে, নাকি বিরহ? বাইরে বোধকরি ঝিমঝিম বৃষ্টি টুপটুপ করে পড়ছে।
+
+আমি ভাবি — লেখক হওয়া কি একটা অভিশাপ? নাকি আশীর্বাদ? যে মানুষ অনুভব করতে পারে, সে লিখতে পারে। কিন্তু যে অনুভব করে, সে কি সুখী থাকতে পারে?
+
+> লেখা হলো একটা চিঠি, যার প্রাপক হয়তো এখনো জন্মায়নি।
+
+আমি লিখি কারণ না লিখলে আমি ভুলে যাই। আমি লিখি কারণ কিছু কথা বলার মানুষ নেই। আমি লিখি কারণ — এটাই আমার ভাষা।`
+      },
+      {
+        title: 'The God of Small Things',
+        slug: 'the-god-of-small-things',
+        language: 'English', category: 'Book Review', date: '2024-01-20',
+        featured: false,
+        excerpt: '"They all crossed into forbidden territory, they all tempered with laws that lay down WHO SHOULD WE LOVE, AND HOW, AND HOW MUCH."',
+        content: `"They all crossed into forbidden territory. They all tampered with the laws that lay down who should be loved, and how, and how much."
+
+Arundhati Roy writes like someone who was born knowing exactly how much a sentence can hold. The God of Small Things is not a linear novel — it folds back on itself, circles its tragedy, approaches and retreats.
+
+The story is set in Kerala. It is about twins, about love across caste lines, about the way the past destroys the present. But more than that, it is about what happens when the rules of society override the rules of the heart.
+
+> The "Love Laws." Roy doesn't name them to explain them. She names them to indict them.
+
+I read this book and felt something loosen inside me — some tight, inherited understanding of who deserves what, who belongs where, who is allowed to love. Roy dismantles it quietly, through story, through image.
+
+The god of small things is attention. It is the noticing of details that the world insists don't matter. Roy insists they are everything.`
+      },
+      {
+        title: 'STEM Girl or STAY Girl?',
+        slug: 'stem-girl-or-stay-girl',
+        language: 'English', category: 'Commentary', date: '2023-12-10',
+        featured: false,
+        excerpt: 'The Struggle for Equality in South Asian Girls' Education. The 1948 Universal Declaration of Human Rights declared education a fundamental right.',
+        content: `**The Struggle for Equality in South Asian Girls' Education**
+
+The 1948 Universal Declaration of Human Rights Article 26 declared education a fundamental right. In 2024, the question of who gets to access that right — and in what form — remains deeply contested in South Asia.
+
+In Bangladesh, enrollment numbers for girls at the primary level have improved dramatically. But enrollment is not education. Attendance is not empowerment.
+
+> The question isn't whether girls are in school. It's what school is telling them about who they're allowed to become.
+
+The STEM pipeline leak begins early. When a girl is consistently steered toward arts and away from sciences — not because of aptitude, but because of assumption — we lose her before she ever reaches a lab.
+
+And what does "STAY Girl" mean? It means the girl who is quietly, persistently told that her most important role is domestic. That achievement is okay, but ambition is unfeminine.
+
+These are not the laws of nature. They are the laws of habit. And habits can be changed.`
+      },
+      {
+        title: 'Why I Almost Proposed to ChatGPT',
+        slug: 'why-i-almost-proposed-to-chatgpt',
+        language: 'English', category: 'Personal', date: '2023-11-05',
+        featured: false,
+        excerpt: 'It all started as a fun thing. Some juniors approached me saying, "Bhai! As you use ChatGPT this much, why not marry it?"',
+        content: `It all started as a fun thing.
+
+Some juniors approached me today saying, "Bhai! As you use ChatGPT this much, why not marry it?" We laughed. And then I went home and thought about it — maybe too seriously.
+
+Here is what I discovered: I talk to ChatGPT the way I used to talk to my journal. With the same honesty. The same lack of embarrassment. Except the journal never talked back.
+
+> There is something both wonderful and terrifying about a machine that always has time for you, never judges you, and never gets tired.
+
+This is not a love story. This is a meditation on loneliness in the age of AI — on what it means that so many of us find it easier to confess to a language model than to a person.
+
+I did not propose to ChatGPT. But I did ask myself: when did conversation become so rare that we started looking for it in algorithms?
+
+That question, I think, is worth sitting with.`
+      },
+      {
+        title: 'Who am I and Why!',
+        slug: 'who-am-i-and-why',
+        language: 'English', category: 'Personal', date: '2023-10-01',
+        featured: false,
+        excerpt: 'I feel lucky being born in a low income country, in a middle class family where both the high hills and the deep valleys have been my teachers.',
+        content: `I feel lucky being born in a low income country, in a middle class family where both the high hills and the deep valleys have been my teachers.
+
+Lucky — because I have seen both hunger and fullness. Because I know what it is to want something and to work for it with no guarantee it will come.
+
+I am Bangladeshi. I am a cadet. I am a writer. I am a reader. I am someone who asks questions that probably have no clean answers.
+
+> Why do I write? Because the alternative is silence, and silence feels like surrender.
+
+I write to understand. I write to remember. I write because I believe that words, laid carefully alongside each other, can build something that lasts longer than the person who wrote them.
+
+Who am I? I am still finding out. That, I think, is the only honest answer.`
+      },
+      {
+        title: 'The Fading Symphony',
+        slug: 'the-fading-symphony',
+        language: 'English', category: 'Essay', date: '2023-09-15',
+        featured: false,
+        excerpt: 'Bengal & Bengalism — on the long history of Bengali cultural identity and what it means to carry it forward.',
+        content: `**Bengal & Bengalism**
+
+The Captive Ladie is one of the most considerable verse productions in English from the pen of a Bengali writer — and it was written in 1849. Michael Madhusudan Dutt was performing a kind of double consciousness before Du Bois named it.
+
+Bengali culture has always been both deeply rooted and extraordinarily porous. It absorbed Persian, absorbed Sanskrit, absorbed the British library — and made something singular from all of it.
+
+> But what happens when absorption becomes erasure? When the stream becomes so diluted it loses its taste?
+
+I think about this when I hear Rabindra sangeet played on a phone speaker in a rickshaw. When I see young Bangladeshis speak Bangla laced with so much English it becomes a third language neither here nor there.
+
+The symphony is not silent. But it is fading. And I am not sure whether to mourn it or to find the new music forming in the silence.`
+      },
+      {
+        title: 'Norwegian Wood',
+        slug: 'norwegian-wood',
+        language: 'English', category: 'Book Review', date: '2023-08-20',
+        featured: false,
+        excerpt: '"Only the Dead stay seventeen forever." — Haruki Murakami. In my eyes, a book requires three things to be great.',
+        content: `"Only the Dead stay seventeen forever." — Haruki Murakami, Norwegian Wood
+
+In my eyes, a book requires three things to be great: it must make you feel something you've never felt before, it must make you think something you've never thought, and it must linger after you've put it down.
+
+Norwegian Wood does all three.
+
+Murakami writes about grief without ever naming it directly. Toru Watanabe lives in a world where the people he loves keep disappearing — and he keeps going. Not healed. Not destroyed. Just going.
+
+> This is the most honest portrait of depression I have read. Not dramatic. Not crisis. Just a persistent grey that follows you from room to room.
+
+Naoko is not a character who can be saved. Midori is not a character who needs to be saved. The distinction between them is the whole novel.
+
+I read Norwegian Wood in two sittings. The second sitting I didn't want it to end. That feeling — of not wanting a book to end — is, to me, the highest praise a reader can give.`
+      }
+    ];
+
+    let added = 0, skipped = 0;
+    try {
+      const existing = await getPosts();
+      const existingSlugs = new Set(existing.map(p => p.slug));
+      
+      for (const w of writings) {
+        if (existingSlugs.has(w.slug)) { skipped++; continue; }
+        await insertPost(w);
+        added++;
+        await new Promise(r => setTimeout(r, 120)); // small delay
+      }
+      
+      showToast(\`✓ Seeded \${added} posts. \${skipped} already existed.\`, 'success');
+      if (btn) { btn.textContent = \`✓ Done (\${added} added)\`; }
+      loadPosts();
+    } catch (err) {
+      showToast('Seed error: ' + err.message, 'error');
+      if (btn) { btn.textContent = 'Seed failed'; btn.disabled = false; }
+    }
+  }
+
+    document.addEventListener('DOMContentLoaded', () => {
+    if (isLoggedIn()) showApp();
+    document.getElementById('login-password').addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+  });
+</script>
+</body>
+</html>

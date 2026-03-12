@@ -1,1239 +1,374 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sazid — Writer, Reader, Dreamer</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
-    <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --ink:#0e0c0a;--paper:#f5f0e8;--cream:#ede7d9;
-      --red:#c0392b;--green:#1a4a2e;--muted:#7a7060;--border:#ccc4b0;
-      --display:'Playfair Display',Georgia,serif;
-      --body:'EB Garamond',Georgia,serif;
-      --mono:'Space Mono',monospace;
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── RESET & VARIABLES ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink:    #0e0c0a;
+      --paper:  #f5f0e8;
+      --cream:  #ede7d9;
+      --red:    #c0392b;
+      --green:  #1a4a2e;
+      --muted:  #7a7060;
+      --border: #ccc4b0;
+      --display: 'Playfair Display', Georgia, serif;
+      --body:    'EB Garamond', Georgia, serif;
+      --mono:    'Space Mono', monospace;
     }
-    html{scroll-behavior:smooth}
-    body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.6;overflow-x:hidden}
+    html { scroll-behavior: smooth; }
+    body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 18px; line-height: 1.6; overflow-x: hidden; }
 
-    /* ── NAV: transparent over cream hero, solid once scrolled ── */
-    nav{position:fixed;top:0;left:0;right:0;z-index:300;
-      background:transparent;display:flex;align-items:center;
-      justify-content:space-between;padding:0 3rem;height:52px;
-      transition:background .4s,border-color .4s;
-      border-bottom:1px solid transparent}
-    nav.scrolled{background:var(--ink);border-bottom-color:#2a2520}
-    .nav-logo{font-family:var(--mono);font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);text-decoration:none;transition:color .4s}
-    nav.scrolled .nav-logo{color:var(--paper)}
-    .nav-links{display:flex;gap:2rem;list-style:none;align-items:center}
-    .nav-links a{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s}
-    nav.scrolled .nav-links a{color:#9a9080}
-    .nav-links a:hover{color:var(--ink)}
-    nav.scrolled .nav-links a:hover{color:var(--paper)}
-    .nav-admin{color:var(--red)!important}
+    /* ── NAV ── */
+    nav { position: sticky; top: 0; z-index: 100; background: var(--ink); display: flex; align-items: center; justify-content: space-between; padding: 0 3rem; height: 52px; border-bottom: 1px solid #2a2520; }
+    .nav-logo { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--paper); text-decoration: none; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; }
+    .nav-links a { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: #9a9080; text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--paper); }
+    .nav-admin { color: var(--red) !important; }
 
-    /* ── HERO — warm cream, full viewport, journal feel ── */
-    .hero{
-      background:#f0e9d8;color:var(--ink);
-      height:100vh;min-height:600px;
-      display:grid;grid-template-rows:auto 1fr auto;
-      position:relative;overflow:hidden;
-    }
-    /* faint notebook lines */
-    .hero::before{
-      content:"";position:absolute;inset:0;
-      background:
-        repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(14,12,10,.055) 59px,rgba(14,12,10,.055) 60px),
-        repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(14,12,10,.025) 59px,rgba(14,12,10,.025) 60px);
-      pointer-events:none;z-index:0;
-    }
-    /* warm red smudge top-right */
-    .hero::after{
-      content:"";position:absolute;top:-15%;right:-5%;
-      width:40vw;height:40vw;
-      background:radial-gradient(ellipse,rgba(192,57,43,.07) 0%,transparent 65%);
-      pointer-events:none;z-index:0;
-    }
-    /* SVG decorative layer */
-    .hero-deco{
-      position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;
-    }
+    /* ── HERO ── */
+    .hero { background: var(--ink); color: var(--paper); padding: 5rem 3rem 0; display: grid; grid-template-columns: 1fr 1fr; min-height: 86vh; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.025) 39px, rgba(255,255,255,0.025) 40px); pointer-events: none; }
+    .hero-left { display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 4rem; position: relative; z-index: 2; animation: fadeUp 0.7s ease both 0.1s; }
+    .hero-tag { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red); margin-bottom: 1.5rem; }
+    .hero-descriptor { font-family: var(--mono); font-size: 0.8rem; line-height: 2.4; color: #6a6055; margin-bottom: 3rem; }
+    .hero-descriptor span { display: block; }
+    .hero-descriptor span::before { content: '* '; color: var(--red); }
+    .hero-bio { font-size: 1.05rem; line-height: 1.75; color: #bdb5a5; max-width: 380px; border-left: 2px solid var(--red); padding-left: 1.2rem; }
+    .hero-right { position: relative; display: flex; align-items: flex-start; justify-content: flex-end; padding-top: 3rem; z-index: 2; animation: fadeUp 0.7s ease both 0.25s; }
+    .hero-seek { font-family: var(--display); font-size: 1.1rem; font-style: italic; color: var(--red); line-height: 1.3; text-align: right; border-right: 2px solid var(--red); padding-right: 1rem; }
+    .hero-big-name { font-family: var(--display); font-size: clamp(5rem, 12vw, 11rem); font-weight: 900; line-height: 1; color: var(--cream); opacity: 0.07; position: absolute; bottom: 2rem; left: 0; right: 0; text-align: center; pointer-events: none; user-select: none; letter-spacing: -0.02em; }
 
-    /* TOP BAR */
-    .hero-topbar{
-      position:relative;z-index:2;
-      display:flex;justify-content:space-between;align-items:flex-start;
-      padding:6.5rem 3rem 0;
-      animation:fadeUp .6s ease both .1s;
-    }
-    .hero-side-quest{display:flex;flex-direction:column;gap:.5rem}
-    .hero-sq-label{
-      font-family:var(--mono);font-size:.62rem;letter-spacing:.28em;
-      text-transform:uppercase;color:var(--red);
-      display:flex;align-items:center;gap:.5rem;
-    }
-    .hero-sq-label::before{content:"";display:block;width:20px;height:1px;background:var(--red)}
-    .hero-tagline{
-      font-family:var(--body);font-size:1rem;font-style:italic;
-      color:var(--muted);line-height:1.4;
-    }
-    .hero-seek-right{
-      font-family:var(--display);font-size:.95rem;font-style:italic;
-      color:var(--red);line-height:1.4;text-align:right;
-      border-right:2px solid rgba(192,57,43,.3);padding-right:.9rem;
-    }
+    /* ── SECTION RULE ── */
+    .section-rule { display: flex; align-items: center; gap: 1rem; margin: 0 3rem; padding: 2rem 0 1.5rem; border-top: 1px solid var(--border); }
+    .section-rule-label { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+    .section-rule-line { flex: 1; height: 1px; background: var(--border); }
 
-    /* BIG NAME — centre */
-    .hero-center{
-      position:relative;z-index:2;
-      display:flex;flex-direction:column;
-      align-items:center;justify-content:center;
-      text-align:center;
-      animation:fadeUp .75s ease both .2s;
-    }
-    .hero-name{
-      font-family:var(--display);
-      font-size:clamp(5.5rem,17vw,14rem);
-      font-weight:900;line-height:.88;
-      letter-spacing:-.03em;
-      color:transparent;
-      -webkit-text-stroke:1.5px rgba(14,12,10,.2);
-      user-select:none;cursor:default;
-    }
-    .hero-name .hl{
-      display:inline-block;
-      transition:color .25s,-webkit-text-stroke .25s,transform .35s cubic-bezier(.34,1.56,.64,1);
-    }
-    .hero-name .hl:hover{
-      color:var(--red);-webkit-text-stroke:0px;
-      transform:translateY(-6px) scale(1.08);
-    }
-    .hero-descriptors{
-      display:flex;gap:2rem;margin-top:1.8rem;flex-wrap:wrap;justify-content:center;
-    }
-    .hero-d{
-      font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;
-      text-transform:uppercase;color:var(--border);
-      display:flex;align-items:center;gap:.4rem;
-      transition:color .3s;cursor:default;
-    }
-    .hero-d::before{content:"*";color:var(--red)}
-    .hero-d:hover{color:var(--muted)}
+    /* ── FEATURED ── */
+    .featured { display: grid; grid-template-columns: 1.6fr 1fr; margin: 0 3rem; border-bottom: 1px solid var(--border); padding-bottom: 3rem; }
+    .featured-main { padding-right: 3rem; border-right: 1px solid var(--border); cursor: pointer; }
+    .article-tag { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--red); margin-bottom: 0.8rem; display: block; }
+    .featured-title { font-family: var(--display); font-size: 2.8rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1rem; transition: color 0.2s; }
+    .featured-main:hover .featured-title { color: var(--red); }
+    .featured-byline { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1.2rem; }
+    .featured-excerpt { font-size: 1.05rem; line-height: 1.75; color: #3a3530; max-width: 520px; margin-bottom: 1.2rem; }
+    .read-more { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.1em; color: var(--red); text-transform: uppercase; }
+    .featured-sidebar { padding-left: 2.5rem; display: flex; flex-direction: column; gap: 2rem; }
+    .article-list-item { cursor: pointer; padding-bottom: 1.8rem; border-bottom: 1px solid var(--border); }
+    .article-list-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .article-list-title { font-family: var(--display); font-size: 1.2rem; font-weight: 700; line-height: 1.25; margin-bottom: 0.25rem; transition: color 0.2s; }
+    .article-list-item:hover .article-list-title { color: var(--red); }
+    .article-list-byline { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.4rem; }
+    .article-list-excerpt { font-size: 0.9rem; color: #5a5045; line-height: 1.6; }
 
-    /* BOTTOM BIO */
-    .hero-bottom{
-      position:relative;z-index:2;
-      display:grid;grid-template-columns:1fr auto;
-      gap:4rem;align-items:end;
-      padding:0 3rem 3.5rem;
-      animation:fadeUp .8s ease both .35s;
-    }
-    .hero-bio{
-      font-size:1rem;line-height:1.85;color:var(--muted);
-      border-left:2px solid var(--red);padding-left:1.2rem;
-      max-width:480px;
-    }
-    .hero-scroll-hint{display:flex;flex-direction:column;align-items:flex-end;gap:.6rem}
-    .hero-scroll-text{font-family:var(--mono);font-size:.5rem;letter-spacing:.22em;text-transform:uppercase;color:var(--border)}
-    .hero-scroll-line{width:1px;height:44px;background:linear-gradient(var(--red),transparent);animation:scrollPulse 2s ease-in-out infinite}
-    @keyframes scrollPulse{0%,100%{opacity:.35;transform:scaleY(.8)}50%{opacity:1;transform:scaleY(1)}}
+    /* ── MORE WRITING ── */
+    .coming-soon { margin: 0 3rem; padding: 2rem 0; border-bottom: 1px solid var(--border); display: flex; gap: 4rem; align-items: flex-start; }
+    .coming-soon-label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); padding-top: 0.3rem; white-space: nowrap; }
+    .coming-soon-items { display: flex; gap: 4rem; flex-wrap: wrap; }
+    .coming-soon-item { cursor: pointer; }
+    .coming-soon-title { font-family: var(--display); font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; transition: color 0.2s; }
+    .coming-soon-item:hover .coming-soon-title { color: var(--red); }
+    .coming-soon-author { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; color: var(--muted); }
 
-    /* ── UNIVERSE ── */
-    .universe{background:var(--ink);position:relative;padding-bottom:0}
+    /* ── WRITINGS GRID ── */
+    .writings-section { margin: 0 3rem; padding-bottom: 5rem; }
+    #filter-tabs { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
+    .filter-tab { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.7rem 1.2rem; border: none; background: transparent; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; margin-bottom: -1px; }
+    .filter-tab:hover { color: var(--ink); }
+    .filter-tab.active { color: var(--ink); border-bottom-color: var(--red); }
+    .writings-grid { display: grid; grid-template-columns: repeat(3, 1fr); border-left: 1px solid var(--border); border-top: 1px solid var(--border); }
+    .writing-card { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.8rem; cursor: pointer; transition: background 0.2s; }
+    .writing-card:hover { background: var(--cream); }
+    .writing-card-number { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.15em; color: var(--border); margin-bottom: 0.7rem; display: block; }
+    .writing-card-lang { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); background: rgba(26,74,46,0.08); display: inline-block; padding: 0.15rem 0.5rem; margin-bottom: 0.6rem; }
+    .writing-card-title { font-family: var(--display); font-size: 1.15rem; font-weight: 700; line-height: 1.3; margin-bottom: 0.5rem; transition: color 0.2s; }
+    .writing-card:hover .writing-card-title { color: var(--red); }
+    .writing-card-excerpt { font-size: 0.88rem; line-height: 1.6; color: #5a5045; margin-bottom: 0.8rem; }
+    .writing-card-date { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.08em; color: var(--border); }
 
-    .ticker-wrap{width:100%;overflow:hidden;border-top:1px solid #1a1714;border-bottom:1px solid #1a1714;padding:.65rem 0}
-    .ticker-track{display:flex;white-space:nowrap;animation:ticker 32s linear infinite}
-    .ticker-track:hover{animation-play-state:paused}
-    .ticker-item{font-family:var(--mono);font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:#252220;padding:0 2.5rem;flex-shrink:0}
-    .ticker-item b{color:var(--red);font-weight:400}
-
-    .universe-header{padding:2rem 3rem 1.5rem;display:flex;align-items:center;gap:1.5rem;border-bottom:1px solid #1a1714}
-    .universe-header-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:#3a3530}
-    .universe-header-line{flex:1;height:1px;background:#1a1714}
-    .universe-header-count{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;color:#2a2520}
-
-    /* 5-col desktop grid */
-    .universe-grid{display:grid;grid-template-columns:repeat(5,1fr)}
-    .universe-scroll-track{display:none}
-
-    /* ── FLIP CARDS ── */
-    /* ── palette: warm parchment to blend with cream hero ── */
-    .flip-grid{display:grid;grid-template-columns:repeat(5,1fr);background:#e8e0ce}
-    .flip-card{height:560px;perspective:1400px;cursor:pointer;border-right:1px solid rgba(14,12,10,.1);position:relative}
-    .flip-card:last-child{border-right:none}
-    .flip-card:hover .flip-inner{transform:rotateY(180deg)}
-    .flip-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.4,0,.2,1)}
-    .flip-front,.flip-back{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;overflow:hidden}
-
-    /* FRONT — warm parchment, ink text */
-    .flip-front{background:#e8e0ce;padding:2.2rem 1.8rem;justify-content:flex-end;border-bottom:2px solid rgba(14,12,10,.06)}
-    .flip-front::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(14,12,10,.04) 39px,rgba(14,12,10,.04) 40px);pointer-events:none}
-    .flip-front-deco{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
-    .flip-num{font-family:var(--mono);font-size:.62rem;letter-spacing:.15em;color:var(--red);position:absolute;top:1.8rem;left:1.8rem;z-index:2}
-    .flip-tag{font-family:var(--mono);font-size:.55rem;letter-spacing:.12em;color:rgba(14,12,10,.35);text-transform:uppercase;margin-bottom:.7rem;z-index:2}
-    .flip-name{font-family:var(--display);font-size:2.2rem;font-weight:700;color:var(--ink);line-height:1;margin-bottom:.6rem;z-index:2}
-    .flip-tagline{font-family:var(--body);font-size:.88rem;font-style:italic;color:rgba(14,12,10,.45);margin-bottom:1.4rem;line-height:1.5;z-index:2}
-    .flip-cta{font-family:var(--mono);font-size:.55rem;letter-spacing:.12em;color:rgba(192,57,43,.55);text-transform:uppercase;display:flex;align-items:center;gap:.5rem;z-index:2}
-    .flip-cta::before{content:'';display:block;width:18px;height:1px;background:rgba(192,57,43,.35)}
-
-    /* BACK — slightly darker warm tone, richly filled */
-    .flip-back{background:#f0e9d8;transform:rotateY(180deg);padding:0}
-
-    /* SVG art slot — swap-friendly */
-    .flip-back-art{
-      height:175px;position:relative;overflow:hidden;flex-shrink:0;
-      background:#d9cdb8; /* warm tan when no SVG */
-    }
-    /* To replace SVG: target .flip-back-art in #ucard-cadence, #ucard-books etc. */
-    .flip-back-art svg{width:100%;height:175px;display:block}
-
-    .flip-back-tags{display:flex;flex-wrap:wrap;gap:.35rem;padding:.8rem 1.4rem .4rem}
-    .flip-back-tag{font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(14,12,10,.4);border:1px solid rgba(14,12,10,.12);border-radius:20px;padding:.22rem .65rem}
-    .flip-back-title{font-family:var(--display);font-size:1.5rem;font-weight:700;color:var(--ink);line-height:1;padding:.2rem 1.4rem .5rem}
-    .flip-back-quote{font-family:var(--body);font-size:.8rem;font-style:italic;color:rgba(14,12,10,.5);line-height:1.55;border-left:2px solid var(--red);margin:0 1.4rem .7rem;padding-left:.75rem}
-    .flip-back-body{font-family:var(--body);font-size:.8rem;line-height:1.6;color:rgba(14,12,10,.58);padding:0 1.4rem;flex:1}
-    .flip-back-foot{padding:.85rem 1.4rem;border-top:1px solid rgba(14,12,10,.08);display:flex;align-items:center;justify-content:space-between;margin-top:.6rem}
-    .flip-learn{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);border-bottom:1.5px solid var(--red);padding-bottom:.2rem;text-decoration:none;transition:color .2s}
-    .flip-learn:hover{color:var(--red)}
-    .flip-ig a{font-family:var(--mono);font-size:.5rem;letter-spacing:.06em;color:rgba(14,12,10,.28);text-decoration:none;transition:color .2s}
-    .flip-ig a:hover{color:var(--red)}
-    @media(max-width:900px){
-      .flip-grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-      .flip-grid::-webkit-scrollbar{display:none}
-      .flip-card{min-width:82vw;max-width:82vw;height:520px;scroll-snap-align:start;flex-shrink:0;perspective:none}
-      .flip-card:hover .flip-inner{transform:none}
-      .flip-inner{transform:none!important}
-      .flip-front{display:none}
-      .flip-back{transform:none;position:relative;height:100%}
-    }
-    /* ── WRITING SECTION ── */
-    .writing-section { margin: 0; border-top: 1px solid var(--border); }
-
-    /* Header bar */
-    .ws-header { display:flex; align-items:center; justify-content:space-between; padding: 1.5rem 3rem; border-bottom: 1px solid var(--border); }
-    .ws-label { font-family:var(--mono); font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); }
-    .ws-filters { display:flex; gap:0; }
-    .ws-filter { font-family:var(--mono); font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; padding:.4rem 1rem; border:none; background:transparent; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; transition:all .2s; }
-    .ws-filter:hover { color:var(--ink); }
-    .ws-filter.active { color:var(--ink); border-bottom-color:var(--red); }
-
-    /* Featured strip — horizontal, text-only */
-    .ws-featured { display:grid; grid-template-columns: 2fr 1fr; border-bottom:1px solid var(--border); }
-    .ws-featured-main { padding: 3rem 3rem 3rem 3rem; border-right:1px solid var(--border); cursor:pointer; }
-    .ws-featured-main:hover .ws-post-title { color:var(--red); }
-    .ws-featured-tag { font-family:var(--mono); font-size:.58rem; letter-spacing:.18em; text-transform:uppercase; color:var(--red); display:block; margin-bottom:.8rem; }
-    .ws-featured-title { font-family:var(--display); font-size:2.6rem; font-weight:700; line-height:1.05; letter-spacing:-.02em; color:var(--ink); margin-bottom:.8rem; transition:color .2s; }
-    .ws-featured-byline { font-family:var(--mono); font-size:.6rem; letter-spacing:.08em; color:var(--muted); margin-bottom:1.2rem; }
-    .ws-featured-excerpt { font-family:var(--body); font-size:1.05rem; line-height:1.78; color:rgba(14,12,10,.6); max-width:500px; margin-bottom:1.5rem; }
-    .ws-read-more { font-family:var(--mono); font-size:.62rem; letter-spacing:.12em; text-transform:uppercase; color:var(--red); }
-
-    /* Sidebar list */
-    .ws-sidebar { display:flex; flex-direction:column; }
-    .ws-sidebar-item { padding:1.5rem 2.5rem; border-bottom:1px solid var(--border); cursor:pointer; transition:background .15s; }
-    .ws-sidebar-item:last-child { border-bottom:none; }
-    .ws-sidebar-item:hover { background:var(--cream); }
-    .ws-sidebar-item:hover .ws-post-title { color:var(--red); }
-    .ws-sidebar-tag { font-family:var(--mono); font-size:.55rem; letter-spacing:.12em; text-transform:uppercase; color:var(--red); display:block; margin-bottom:.4rem; }
-    .ws-post-title { font-family:var(--display); font-size:1.15rem; font-weight:700; line-height:1.25; color:var(--ink); transition:color .2s; margin-bottom:.25rem; }
-    .ws-post-byline { font-family:var(--mono); font-size:.55rem; letter-spacing:.08em; color:var(--muted); margin-bottom:.4rem; }
-    .ws-post-excerpt { font-family:var(--body); font-size:.88rem; line-height:1.6; color:rgba(14,12,10,.5); }
-
-    /* More writing strip */
-    .ws-more { display:flex; align-items:baseline; border-bottom:1px solid var(--border); padding:0; overflow-x:auto; }
-    .ws-more-label { font-family:var(--mono); font-size:.58rem; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); padding:1.2rem 2rem; white-space:nowrap; flex-shrink:0; border-right:1px solid var(--border); }
-    .ws-more-item { padding:1.2rem 2rem; border-right:1px solid var(--border); cursor:pointer; flex-shrink:0; }
-    .ws-more-item:hover .ws-more-title { color:var(--red); }
-    .ws-more-title { font-family:var(--display); font-size:.95rem; font-weight:700; color:var(--ink); transition:color .2s; margin-bottom:.15rem; }
-    .ws-more-meta { font-family:var(--mono); font-size:.52rem; letter-spacing:.08em; color:var(--muted); }
-
-    /* All writings grid */
-    .ws-grid-wrap { display:none; }
-    .ws-grid-wrap.active { display:block; }
-    .ws-grid { display:grid; grid-template-columns:repeat(3,1fr); border-left:1px solid var(--border); border-top:1px solid var(--border); }
-    .ws-card { border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:1.8rem; cursor:pointer; transition:background .15s; }
-    .ws-card:hover { background:var(--cream); }
-    .ws-card:hover .ws-card-title { color:var(--red); }
-    .ws-card-num { font-family:var(--mono); font-size:.52rem; letter-spacing:.12em; color:rgba(14,12,10,.2); display:block; margin-bottom:.6rem; }
-    .ws-card-lang { font-family:var(--mono); font-size:.5rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink); background:rgba(14,12,10,.07); display:inline-block; padding:.15rem .5rem; margin-bottom:.6rem; }
-    .ws-card-title { font-family:var(--display); font-size:1.1rem; font-weight:700; line-height:1.3; color:var(--ink); margin-bottom:.5rem; transition:color .2s; }
-    .ws-card-excerpt { font-family:var(--body); font-size:.88rem; line-height:1.6; color:rgba(14,12,10,.5); margin-bottom:.8rem; }
-    .ws-card-date { font-family:var(--mono); font-size:.52rem; letter-spacing:.08em; color:rgba(14,12,10,.3); }
-
-    /* ── BOOKS SHELF (homepage strip) ── */
-    .books-strip { border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin:0; padding:2rem 3rem; display:flex; align-items:center; gap:3rem; overflow-x:auto; }
-    .books-strip-label { font-family:var(--mono); font-size:.58rem; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); white-space:nowrap; flex-shrink:0; }
-    .books-strip-label a { color:var(--muted); text-decoration:none; border-bottom:1px solid var(--border); padding-bottom:.1rem; }
-    .books-strip-label a:hover { color:var(--red); border-bottom-color:var(--red); }
-    .book-spine { display:flex; flex-direction:column; justify-content:space-between; width:28px; height:120px; cursor:default; flex-shrink:0; padding:.4rem .3rem; position:relative; }
-    .book-spine-title { font-family:var(--mono); font-size:.42rem; letter-spacing:.06em; writing-mode:vertical-rl; text-orientation:mixed; color:var(--paper); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-height:80px; line-height:1; }
-    .book-spine-author { font-family:var(--mono); font-size:.38rem; color:rgba(255,255,255,.5); writing-mode:vertical-rl; white-space:nowrap; overflow:hidden; }
-
-        /* ── POST OVERLAY — Asterisk style ── */
-    #post-overlay{
-      display:none;position:fixed;inset:0;z-index:300;
-      overflow-y:auto;background:var(--paper);
-      opacity:0;transform:translateY(20px);
-      transition:opacity .35s ease,transform .35s ease;
-    }
-    #post-overlay.open{display:block}
-    #post-overlay.visible{opacity:1;transform:translateY(0)}
-    .post-layout{
-      display:grid;grid-template-columns:200px 1fr;
-      max-width:1100px;margin:0 auto;min-height:100vh;
-      padding:4rem 3rem;gap:5rem;
-    }
-    /* left sidebar */
-    .post-sidebar{position:sticky;top:4rem;height:fit-content}
-    .post-close{
-      font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;
-      text-transform:uppercase;color:var(--muted);background:none;
-      border:none;cursor:pointer;display:flex;align-items:center;
-      gap:.5rem;transition:color .2s;padding:0;margin-bottom:3rem;
-    }
-    .post-close:hover{color:var(--red)}
-    .post-sidebar-tag{
-      font-family:var(--mono);font-size:.55rem;letter-spacing:.15em;
-      text-transform:uppercase;color:var(--red);display:block;margin-bottom:2rem;
-    }
-    .post-sidebar-date{
-      font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;
-      color:var(--muted);display:block;margin-bottom:3rem;
-    }
-    /* section markers */
-    .post-toc{display:flex;flex-direction:column;gap:.8rem}
-    .post-toc-marker{
-      display:flex;align-items:center;gap:.6rem;
-      font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;
-      color:rgba(14,12,10,.25);text-transform:uppercase;
-      transition:color .2s;cursor:default;
-    }
-    .post-toc-marker::before{
-      content:'';display:block;width:20px;height:1px;
-      background:currentColor;flex-shrink:0;
-    }
-    .post-toc-marker.active{color:var(--red)}
-    /* main content */
-    .post-main{padding-top:.5rem}
-    .post-full-tag{
-      font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;
-      text-transform:uppercase;color:var(--red);display:block;margin-bottom:1.2rem;
-    }
-    .post-full-title{
-      font-family:var(--display);font-size:clamp(2.4rem,5vw,3.8rem);
-      font-weight:900;line-height:1.02;letter-spacing:-.02em;
-      color:var(--red);margin-bottom:1rem;
-    }
-    .post-full-subtitle{
-      font-family:var(--display);font-size:clamp(1.1rem,2vw,1.4rem);
-      font-style:italic;color:rgba(14,12,10,.55);line-height:1.5;
-      margin-bottom:1.5rem;max-width:680px;
-    }
-    .post-full-byline{
-      font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;
-      color:var(--muted);margin-bottom:3rem;padding-bottom:2.5rem;
-      border-bottom:1px solid var(--border);
-    }
-    .post-inline-img{margin:2.5rem 0}
-    .post-inline-img img{width:100%;max-height:460px;object-fit:cover;display:block}
-    .post-full-body p{
-      font-family:var(--body);font-size:1.15rem;line-height:1.92;
-      color:#2a2520;margin-bottom:1.6rem;max-width:680px;
-    }
-    .post-full-body blockquote{
-      border-left:3px solid var(--red);padding:1rem 1.5rem;
-      margin:2.5rem 0;background:var(--cream);
-    }
-    .post-full-body blockquote p{
-      font-family:var(--display);font-size:1.25rem;font-style:italic;
-      color:var(--ink);margin:0;
-    }
-    .post-section-marker{
-      font-family:var(--mono);font-size:.55rem;letter-spacing:.15em;
-      text-transform:uppercase;color:rgba(14,12,10,.2);
-      margin:3rem 0 1rem;display:flex;align-items:center;gap:.8rem;
-    }
-    .post-section-marker::before{content:'';display:block;width:24px;height:1px;background:currentColor}
-
-    /* ── LOADING ── */
-    .loading{display:flex;align-items:center;justify-content:center;padding:4rem;font-family:var(--mono);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
-    .loading::after{content:'';width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .6s linear infinite;margin-left:1rem}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    /* ── POST OVERLAY ── */
+    #post-overlay { display: none; position: fixed; inset: 0; background: var(--paper); z-index: 200; overflow-y: auto; padding: 4rem 3rem; }
+    #post-overlay.open { display: block; }
+    .post-overlay-inner { max-width: 680px; margin: 0 auto; }
+    .post-close { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); background: none; border: none; cursor: pointer; margin-bottom: 2.5rem; display: block; transition: color 0.2s; }
+    .post-close:hover { color: var(--red); }
+    .post-full-title { font-family: var(--display); font-size: 3rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.02em; margin: 0.8rem 0; }
+    .post-full-byline { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 2rem; }
+    .post-full-body p { font-size: 1.15rem; line-height: 1.85; color: #2a2520; margin-bottom: 1.5rem; }
 
     /* ── ABOUT ── */
-    .about-strip{background:var(--ink);color:var(--paper);padding:5rem 3rem;display:grid;grid-template-columns:1fr 1.6fr;gap:5rem;align-items:center}
-    .about-heading{font-family:var(--mono);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:1.5rem;display:block}
-    .about-name-big{font-family:var(--display);font-size:clamp(3.5rem,7vw,6rem);font-weight:900;line-height:.9;margin-bottom:2rem}
-    .about-descriptors{font-family:var(--mono);font-size:.75rem;line-height:2.4;color:#6a6055}
-    .about-descriptors span{display:block}
-    .about-descriptors span::before{content:'* ';color:var(--red)}
-    .about-text{font-size:1.2rem;line-height:1.85;color:#bdb5a5;margin-bottom:1.8rem}
-    .about-text em{font-style:italic;color:var(--paper)}
+    .about-strip { background: var(--ink); color: var(--paper); padding: 5rem 3rem; display: grid; grid-template-columns: 1fr 1.6fr; gap: 5rem; align-items: center; }
+    .about-heading { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red); margin-bottom: 1.5rem; display: block; }
+    .about-name-big { font-family: var(--display); font-size: clamp(3.5rem, 7vw, 6rem); font-weight: 900; line-height: 0.9; margin-bottom: 2rem; }
+    .about-descriptors { font-family: var(--mono); font-size: 0.75rem; line-height: 2.4; color: #6a6055; }
+    .about-descriptors span { display: block; }
+    .about-descriptors span::before { content: '* '; color: var(--red); }
+    .about-text { font-size: 1.2rem; line-height: 1.85; color: #bdb5a5; margin-bottom: 1.8rem; }
+    .about-text em { font-style: italic; color: var(--paper); }
 
     /* ── NEWSLETTER ── */
-    .newsletter{border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:0 3rem;padding:3rem 0;display:flex;align-items:center;justify-content:space-between;gap:2rem}
-    .newsletter-text{font-family:var(--display);font-size:1.4rem;font-style:italic;max-width:420px;line-height:1.4}
-    .newsletter-form{display:flex;border:1px solid var(--ink)}
-    .newsletter-form input{padding:.8rem 1.2rem;font-family:var(--mono);font-size:.7rem;border:none;background:transparent;outline:none;width:240px;color:var(--ink)}
-    .newsletter-form input::placeholder{color:var(--muted)}
-    .newsletter-form button{padding:.8rem 1.5rem;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s}
-    .newsletter-form button:hover{background:var(--red)}
+    .newsletter { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 0 3rem; padding: 3rem 0; display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
+    .newsletter-text { font-family: var(--display); font-size: 1.4rem; font-style: italic; max-width: 420px; line-height: 1.4; }
+    .newsletter-form { display: flex; border: 1px solid var(--ink); }
+    .newsletter-form input { padding: 0.8rem 1.2rem; font-family: var(--mono); font-size: 0.7rem; border: none; background: transparent; outline: none; width: 240px; color: var(--ink); }
+    .newsletter-form input::placeholder { color: var(--muted); }
+    .newsletter-form button { padding: 0.8rem 1.5rem; background: var(--ink); color: var(--paper); font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; border: none; cursor: pointer; transition: background 0.2s; }
+    .newsletter-form button:hover { background: var(--red); }
 
     /* ── FOOTER ── */
-    footer{background:var(--ink);color:#6a6055;padding:2.5rem 3rem;display:flex;align-items:center;justify-content:space-between}
-    .footer-logo{font-family:var(--mono);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--paper)}
-    .footer-links{display:flex;gap:2rem;list-style:none}
-    .footer-links a{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:#6a6055;text-decoration:none;transition:color .2s}
-    .footer-links a:hover{color:var(--paper)}
-    .footer-copy{font-family:var(--mono);font-size:.6rem;color:#3a3530}
+    footer { background: var(--ink); color: #6a6055; padding: 2.5rem 3rem; display: flex; align-items: center; justify-content: space-between; }
+    .footer-logo { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--paper); }
+    .footer-links { display: flex; gap: 2rem; list-style: none; }
+    .footer-links a { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: #6a6055; text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--paper); }
+    .footer-copy { font-family: var(--mono); font-size: 0.6rem; color: #3a3530; }
 
-    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    /* ── ANIMATION ── */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ── RESPONSIVE ── */
-    @media(max-width:900px){
-      nav{padding:0 1.2rem}
-
-      /* Hero mobile */
-      .hero-top{padding:1.5rem 1.2rem 0}
-      .hero-seek{display:none}
-      .hero-center{padding:0 1.2rem}
-      .hero-name{font-size:clamp(4rem,22vw,8rem)}
-      .hero-descriptor-row{gap:1.2rem;margin-top:1.2rem}
-      .hero-bottom{grid-template-columns:1fr;gap:1rem;padding:0 1.2rem 2rem}
-      .hero-scroll-cue{display:none}
-
-      /* Universe mobile: horizontal scroll like Instagram */
-      .universe-grid{
-        display:flex;
-        overflow-x:auto;
-        scroll-snap-type:x mandatory;
-        -webkit-overflow-scrolling:touch;
-        gap:0;
-        border-top:1px solid #1a1714;
-        padding-bottom:.5rem;
-        scrollbar-width:none;
-      }
-      .universe-grid::-webkit-scrollbar{display:none}
-
-      .u-card{
-        min-width:72vw;max-width:72vw;
-        scroll-snap-align:start;
-        border-right:1px solid #1a1714 !important;
-        flex-shrink:0;
-      }
-
-      /* Inline expand: full width on mobile */
-      .u-expand{display:none !important}
-      .u-expand.open{display:block !important}
-      .u-expand-inner{grid-template-columns:1fr;gap:1.5rem;padding:1.5rem 1.2rem}
-      .u-carousel-slide img{height:220px}
-
-      /* rest of page */
-      .featured-hero{grid-template-columns:1fr;margin:0 1.2rem}
-      .featured-hero-img{height:240px}
-      .featured-hero-content{border-left:none;border-top:1px solid var(--border);padding:1.5rem 0}
-      .sidebar-strip{grid-template-columns:1fr;margin:0 1.2rem}
-      .sidebar-card{border-right:none;border-bottom:1px solid var(--border)}
-      .writings-grid{grid-template-columns:1fr 1fr}
-      .writings-section,.section-rule,.newsletter,.more-strip{margin:0 1.2rem}
-      .about-strip{grid-template-columns:1fr;gap:2rem;padding:3rem 1.2rem}
-      footer{padding:2rem 1.2rem;flex-direction:column;align-items:flex-start;gap:1.5rem}
+    @media (max-width: 900px) {
+      nav { padding: 0 1.5rem; }
+      .hero { grid-template-columns: 1fr; padding: 3rem 1.5rem 0; min-height: auto; }
+      .hero-right { display: none; }
+      .featured { grid-template-columns: 1fr; margin: 0 1.5rem; }
+      .featured-main { padding-right: 0; border-right: none; border-bottom: 1px solid var(--border); padding-bottom: 2rem; }
+      .featured-sidebar { padding-left: 0; }
+      .writings-grid { grid-template-columns: 1fr 1fr; }
+      .writings-section, .section-rule, .newsletter { margin: 0 1.5rem; }
+      .about-strip { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 1.5rem; }
+      footer { padding: 2rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+      .coming-soon { margin: 0 1.5rem; flex-direction: column; gap: 1rem; }
     }
-    @media(max-width:600px){
-      .writings-grid{grid-template-columns:1fr}
-      .nav-links li:not(:last-child){display:none}
-      .u-card{min-width:85vw;max-width:85vw}
-      .newsletter{flex-direction:column;align-items:flex-start}
-      .newsletter-form input{width:180px}
+    @media (max-width: 600px) {
+      .writings-grid { grid-template-columns: 1fr; }
+      .featured-title { font-size: 2rem; }
+      .nav-links { display: none; }
+      #post-overlay { padding: 2rem 1.5rem; }
+      .post-full-title { font-size: 2rem; }
     }
   </style>
 </head>
 <body>
 
-<nav>
-  <a href="index.html" class="nav-logo">* Sazid</a>
-  <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="#writings">Writings</a></li>
-    <li><a href="#about">About</a></li>
-    <li><a href="admin.html" class="nav-admin">Admin ↗</a></li>
-  </ul>
-</nav>
+  <nav>
+    <a href="index.html" class="nav-logo">* Sazid</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#writings">Writings</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="admin.html" class="nav-admin">Admin ↗</a></li>
+    </ul>
+  </nav>
 
-<section class="hero">
-
-  <!-- DECORATIVE BACKGROUND — Bangladesh/South Asia line art -->
-  <div class="hero-deco">
-    <svg width="100%" height="100%" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <style>
-          .dl{stroke:rgba(14,12,10,.072);stroke-width:.9;fill:none;stroke-linecap:round}
-          .dr{stroke:rgba(192,57,43,.10);stroke-width:.9;fill:none;stroke-linecap:round}
-          .dt{font-family:Georgia,serif;fill:rgba(14,12,10,.05);font-size:10px;letter-spacing:3px;text-transform:uppercase}
-          .db{font-family:Georgia,serif;fill:rgba(14,12,10,.045);font-weight:700}
-        </style>
-      </defs>
-
-      <!-- ── LEFT: Bangladesh map outline (simplified) ── -->
-      <g transform="translate(40,180) scale(0.55)">
-        <path class="dl" d="
-          M120,10 L150,8 L180,20 L210,15 L230,30 L250,25
-          L260,45 L280,50 L290,70 L300,90 L310,120
-          L320,150 L315,180 L300,200 L290,230
-          L280,260 L260,280 L240,310 L220,330
-          L200,360 L180,380 L160,400 L150,430
-          L130,450 L110,430 L90,410 L80,380
-          L70,350 L60,320 L50,290 L55,260
-          L65,230 L70,200 L80,170 L85,140
-          L90,110 L100,80 L110,50 Z
-        "/>
-        <!-- sunflower/padma at centre of map -->
-        <circle class="dr" cx="185" cy="220" r="45"/>
-        <circle class="dl" cx="185" cy="220" r="30"/>
-        <circle class="dl" cx="185" cy="220" r="12"/>
-        <!-- petals -->
-        <line class="dr" x1="185" y1="175" x2="185" y2="165"/>
-        <line class="dr" x1="185" y1="265" x2="185" y2="275"/>
-        <line class="dr" x1="140" y1="220" x2="130" y2="220"/>
-        <line class="dr" x1="230" y1="220" x2="240" y2="220"/>
-        <line class="dr" x1="153" y1="188" x2="146" y2="181"/>
-        <line class="dr" x1="217" y1="252" x2="224" y2="259"/>
-        <line class="dr" x1="217" y1="188" x2="224" y2="181"/>
-        <line class="dr" x1="153" y1="252" x2="146" y2="259"/>
-        <!-- birds flying off map -->
-        <path class="dl" d="M240,150 Q248,145 256,150"/>
-        <path class="dl" d="M255,140 Q263,135 271,140"/>
-        <path class="dl" d="M270,130 Q278,125 286,130"/>
-        <path class="dl" d="M288,122 Q296,117 304,122"/>
-        <path class="dl" d="M308,115 Q316,110 324,115"/>
-      </g>
-
-      <!-- ── RIGHT: Globe / compass rose ── -->
-      <g transform="translate(1100,40)">
-        <!-- globe circle -->
-        <circle class="dl" cx="170" cy="170" r="140"/>
-        <circle class="dl" cx="170" cy="170" r="105"/>
-        <!-- latitude lines -->
-        <ellipse class="dl" cx="170" cy="170" rx="140" ry="50"/>
-        <ellipse class="dl" cx="170" cy="170" rx="140" ry="95"/>
-        <!-- longitude lines -->
-        <line class="dl" x1="170" y1="30" x2="170" y2="310"/>
-        <line class="dl" x1="50" y1="100" x2="290" y2="240"/>
-        <line class="dl" x1="50" y1="240" x2="290" y2="100"/>
-        <!-- compass points -->
-        <path class="dr" d="M170,30 L163,55 L170,50 L177,55 Z"/>
-        <path class="dl" d="M310,170 L285,163 L290,170 L285,177 Z"/>
-        <path class="dl" d="M30,170 L55,163 L50,170 L55,177 Z"/>
-        <path class="dl" d="M170,310 L163,285 L170,290 L177,285 Z"/>
-        <!-- sunburst from center -->
-        <line class="dr" x1="170" y1="130" x2="170" y2="115"/>
-        <line class="dr" x1="200" y1="140" x2="210" y2="128"/>
-        <line class="dr" x1="140" y1="140" x2="130" y2="128"/>
-        <line class="dr" x1="210" y1="170" x2="225" y2="170"/>
-        <line class="dr" x1="130" y1="170" x2="115" y2="170"/>
-        <!-- birds from globe -->
-        <path class="dl" d="M40,90 Q48,85 56,90"/>
-        <path class="dl" d="M25,78 Q33,73 41,78"/>
-        <path class="dl" d="M10,68 Q18,63 26,68"/>
-      </g>
-
-      <!-- ── CENTRE: Dhaka architecture silhouettes ── -->
-      <g transform="translate(520,600)" opacity=".55">
-        <!-- Lalbagh Fort / Mughal arch -->
-        <path class="dl" d="M0,200 L0,120 Q0,80 40,80 Q80,80 80,120 L80,200"/>
-        <path class="dl" d="M20,120 Q40,100 60,120"/>
-        <line class="dl" x1="0" y1="80" x2="80" y2="80"/>
-        <!-- Shaheed Minar simplified -->
-        <line class="dl" x1="150" y1="200" x2="150" y2="80"/>
-        <path class="dl" d="M130,80 Q150,60 170,80"/>
-        <line class="dl" x1="130" y1="90" x2="170" y2="90"/>
-        <line class="dl" x1="125" y1="200" x2="175" y2="200"/>
-        <!-- National Parliament curved roof -->
-        <path class="dl" d="M220,200 L220,140 Q220,100 260,100 Q300,100 300,140 L300,200"/>
-        <circle class="dl" cx="260" cy="100" r="25"/>
-        <line class="dl" x1="220" y1="160" x2="300" y2="160"/>
-        <!-- Rickshaw wheels -->
-        <circle class="dl" cx="380" cy="185" r="18"/>
-        <circle class="dl" cx="410" cy="185" r="18"/>
-        <line class="dl" x1="362" y1="185" x2="428" y2="185"/>
-        <path class="dl" d="M365,170 Q395,150 425,170"/>
-      </g>
-
-      <!-- ── SCATTERED WORDS — politics, philosophy, Bangladesh ── -->
-      <text class="dt" x="340" y="55">democracy</text>
-      <text class="dt" x="660" y="40">identity</text>
-      <text class="dt" x="920" y="68">memory</text>
-      <text class="dt" x="185" y="88">resistance</text>
-      <text class="dt" x="500" y="855">history</text>
-      <text class="dt" x="760" y="870">philosophy</text>
-      <text class="dt" x="1050" y="858">justice</text>
-      <text class="dt" x="35" y="165" transform="rotate(-90,35,165)">power</text>
-      <text class="dt" x="1408" y="500" transform="rotate(90,1408,500)">dissent</text>
-      <!-- Bengali script traces -->
-      <text class="dt" x="400" y="820" font-size="16">বাংলাদেশ</text>
-      <text class="dt" x="800" y="830" font-size="14">চিন্তা</text>
-
-      <!-- ── ORNAMENTAL CORNERS ── -->
-      <path class="dl" d="M18,18 L58,18 M18,18 L18,58"/>
-      <path class="dl" d="M1422,18 L1382,18 M1422,18 L1422,58"/>
-      <path class="dl" d="M18,882 L58,882 M18,882 L18,842"/>
-      <path class="dl" d="M1422,882 L1382,882 M1422,882 L1422,842"/>
-
-      <!-- ── TALL POLES + BANNERS (GoT energy) ── -->
-      <line class="dl" x1="1050" y1="0" x2="1050" y2="580"/>
-      <path class="dr" d="M1050,60 L1095,80 L1075,105 L1050,92 Z"/>
-      <line class="dl" x1="1070" y1="80" x2="1095" y2="77"/>
-      <line class="dl" x1="390" y1="0" x2="390" y2="550"/>
-      <path class="dl" d="M390,50 L340,70 L358,95 L390,80 Z"/>
-
-      <!-- ── GROUND SCATTER — spears/pens/swords ── -->
-      <line class="dl" x1="430" y1="890" x2="560" y2="850"/>
-      <line class="dl" x1="560" y1="890" x2="680" y2="852"/>
-      <line class="dl" x1="710" y1="882" x2="820" y2="850"/>
-      <path class="dr" d="M560,850 L570,838 L576,852 Z"/>
-      <path class="dr" d="M820,850 L830,838 L836,852 Z"/>
-    </svg>
-  </div>
-
-  <!-- TOP: * side quest label + tagline + italic seek quote -->
-  <div class="hero-topbar">
-    <div class="hero-side-quest">
-      <span class="hero-sq-label">* side quest</span>
-      <span class="hero-tagline">writing through the world to understand it</span>
-    </div>
-    <div class="hero-seek-right">I want<br>to seek<br>beyond</div>
-  </div>
-
-  <!-- CENTRE: hollow giant name, each letter independently hoverable -->
-  <div class="hero-center">
-    <div class="hero-name" aria-label="SAZID">
-      <span class="hl">S</span><span class="hl">A</span><span class="hl">Z</span><span class="hl">I</span><span class="hl">D</span>
-    </div>
-    <div class="hero-descriptors">
-      <span class="hero-d">A Writer</span>
-      <span class="hero-d">A Reader</span>
-      <span class="hero-d">A Dreamer</span>
-      <span class="hero-d">A Seeker</span>
-    </div>
-  </div>
-
-  <!-- BOTTOM: bio left, scroll cue right -->
-  <div class="hero-bottom">
-    <p class="hero-bio">I am a Bangladeshi writer and Georgetown student exploring world perspectives through commentary. My work engages with the nuances of identity, memory, and power across South Asia and beyond.</p>
-    <div class="hero-scroll-hint">
-      <span class="hero-scroll-text">Scroll</span>
-      <div class="hero-scroll-line"></div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ UNIVERSE — Sazid's worlds ═══ -->
-<div class="universe">
-
-  <!-- Ticker -->
-  <div class="ticker-wrap">
-    <div class="ticker-track">
-      <span class="ticker-item">Writer <span>✦</span></span>
-      <span class="ticker-item">Cadence Magazine <span>✦</span></span>
-      <span class="ticker-item">Bookstagram <span>✦</span></span>
-      <span class="ticker-item">Chinta চিন্তা <span>✦</span></span>
-      <span class="ticker-item">Photography <span>✦</span></span>
-      <span class="ticker-item">What Scenes? <span>✦</span></span>
-      <span class="ticker-item">Georgetown <span>✦</span></span>
-      <span class="ticker-item">Bangladesh <span>✦</span></span>
-      <span class="ticker-item">Writer <span>✦</span></span>
-      <span class="ticker-item">Cadence Magazine <span>✦</span></span>
-      <span class="ticker-item">Bookstagram <span>✦</span></span>
-      <span class="ticker-item">Chinta চিন্তা <span>✦</span></span>
-      <span class="ticker-item">Photography <span>✦</span></span>
-      <span class="ticker-item">What Scenes? <span>✦</span></span>
-      <span class="ticker-item">Georgetown <span>✦</span></span>
-      <span class="ticker-item">Bangladesh <span>✦</span></span>
-    </div>
-  </div>
-
-  <!-- Cards grid -->
-  <!-- ═══ FLIP CARDS GRID ═══ -->
-<div class="flip-grid" id="universe-grid">
-
-  <!-- ═══ 01 CADENCE ═══ -->
-  <!--
-    TO SWAP THE ART PANEL SVG:
-    Find <div class="flip-back-art"> inside any card.
-    Replace everything between those tags with:
-      <img src="your-image.jpg" style="width:100%;height:175px;object-fit:cover">
-    Or paste your own <svg>...</svg> there.
-    The slot is always 280×175px.
-  -->
-  <div class="flip-card" id="ucard-cadence">
-    <div class="flip-inner">
-      <div class="flip-front">
-        <div class="flip-front-deco">
-          <svg viewBox="0 0 280 560" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-            <path d="M240,80 Q140,40 90,160 Q55,250 110,370 Q155,450 250,440" fill="none" stroke="rgba(192,57,43,0.32)" stroke-width="1.2"/>
-            <line x1="40" y1="200" x2="240" y2="200" stroke="rgba(14,12,10,0.06)" stroke-width=".7"/>
-            <line x1="40" y1="225" x2="240" y2="225" stroke="rgba(14,12,10,0.06)" stroke-width=".7"/>
-            <line x1="40" y1="250" x2="200" y2="250" stroke="rgba(14,12,10,0.04)" stroke-width=".7"/>
-            <circle cx="220" cy="100" r="40" fill="none" stroke="rgba(14,12,10,0.06)" stroke-width=".7"/>
-          </svg>
-        </div>
-        <span class="flip-num">01</span>
-        <div class="flip-tag">Magazine · Founder</div>
-        <div class="flip-name">Cadence</div>
-        <div class="flip-tagline">The voice of Barishal Cadet College</div>
-        <div class="flip-cta">Hover to explore ↻</div>
+  <section class="hero">
+    <div class="hero-left">
+      <span class="hero-tag">* Personal Blog</span>
+      <div class="hero-descriptor">
+        <span>A Writer</span>
+        <span>A Reader</span>
+        <span>A Dreamer</span>
+        <span>A Seeker</span>
       </div>
-      <div class="flip-back">
-        <div class="flip-back-art">
-          <svg viewBox="0 0 280 175" xmlns="http://www.w3.org/2000/svg">
-            <rect width="280" height="175" fill="#d9cdb8"/>
-            <!-- large C letterform -->
-            <path d="M220,30 Q120,10 80,80 Q50,130 120,160 Q170,178 240,165" fill="none" stroke="rgba(192,57,43,0.80)" stroke-width="1.5"/>
-            <!-- ruled lines suggesting pages -->
-            <line x1="30" y1="55" x2="200" y2="55" stroke="rgba(14,12,10,0.14)" stroke-width=".7"/>
-            <line x1="30" y1="72" x2="200" y2="72" stroke="rgba(14,12,10,0.14)" stroke-width=".7"/>
-            <line x1="30" y1="89" x2="180" y2="89" stroke="rgba(14,12,10,0.10)" stroke-width=".7"/>
-            <line x1="30" y1="106" x2="195" y2="106" stroke="rgba(14,12,10,0.10)" stroke-width=".7"/>
-            <line x1="30" y1="123" x2="160" y2="123" stroke="rgba(14,12,10,0.08)" stroke-width=".7"/>
-            <!-- page corner fold -->
-            <path d="M30,35 L30,155 L220,155 L220,50 L205,35 Z" fill="none" stroke="rgba(14,12,10,0.10)" stroke-width=".7"/>
-            <path d="M205,35 L205,50 L220,50" fill="none" stroke="rgba(14,12,10,0.10)" stroke-width=".7"/>
-            <!-- spine line -->
-            <line x1="30" y1="35" x2="30" y2="155" stroke="rgba(192,57,43,0.32)" stroke-width=".8"/>
-            <!-- star badge -->
-            <polygon points="248,60 251,70 261,70 253,76 256,86 248,80 240,86 243,76 235,70 245,70" fill="none" stroke="rgba(192,57,43,0.56)" stroke-width=".8"/>
-            <!-- birds -->
-            <path d="M200,20 Q206,16 212,20" fill="none" stroke="rgba(14,12,10,0.20)" stroke-width=".8"/>
-            <path d="M215,13 Q221,9 227,13" fill="none" stroke="rgba(14,12,10,0.18)" stroke-width=".8"/>
-            <path d="M230,7 Q236,3 242,7" fill="none" stroke="rgba(14,12,10,0.16)" stroke-width=".8"/>
-            <!-- word -->
-            <text font-family="Georgia,serif" fill="rgba(14,12,10,0.14)" font-size="8" letter-spacing="4" x="38" y="168">EXPRESS · EXPLORE</text>
-          </svg>
-        </div>
-        <div class="flip-back-tags">
-          <span class="flip-back-tag">Magazine</span>
-          <span class="flip-back-tag">Founder</span>
-          <span class="flip-back-tag">Bangladesh</span>
-          <span class="flip-back-tag">Cadets</span>
-        </div>
-        <div class="flip-back-title">Cadence</div>
-        <div class="flip-back-quote">"A cadet is not just a soldier in training. A cadet is a mind in formation."</div>
-        <div class="flip-back-body">Bangladesh's cadet-voice magazine — stories, essays, poetry, travel. Founded to prove that discipline and creativity are not opposites.</div>
-        <div class="flip-back-foot">
-          <a href="cadence.html" class="flip-learn">Read the Magazine →</a>
-          <div class="flip-ig"><a href="https://instagram.com/cadence_bcc/" target="_blank">@cadence_bcc ↗</a></div>
-        </div>
+      <p class="hero-bio">I am a Bangladeshi writer and Georgetown student exploring world perspectives through commentary. My work engages with the nuances of identity, memory, and power across South Asia and beyond.</p>
+    </div>
+    <div class="hero-right">
+      <div class="hero-seek">I want<br>to seek<br>beyond</div>
+    </div>
+    <div class="hero-big-name">Mewos</div>
+  </section>
+
+  <div class="section-rule">
+    <span class="section-rule-label">* Latest Essays</span>
+    <div class="section-rule-line"></div>
+    <span class="section-rule-label">Identity &amp; Memory</span>
+  </div>
+
+  <div id="featured-section"></div>
+  <div id="coming-soon-section"></div>
+
+  <div class="section-rule" id="writings">
+    <span class="section-rule-label">* All Writings</span>
+    <div class="section-rule-line"></div>
+  </div>
+
+  <div class="writings-section">
+    <div id="filter-tabs"></div>
+    <div class="writings-grid" id="writings-grid"></div>
+  </div>
+
+  <section class="about-strip" id="about">
+    <div>
+      <span class="about-heading">* About</span>
+      <div class="about-name-big">Sazid</div>
+      <div class="about-descriptors">
+        <span>A Writer</span><span>A Reader</span><span>Tech Savvy</span><span>A Dreamer</span>
       </div>
     </div>
-  </div>
+    <div>
+      <p class="about-text">I'm Sazid — a writer and communicator with roots in <em>Bangladesh</em> and a vision beyond borders. I write about identity, memory, and the forces that shape our world.</p>
+      <p class="about-text">Through <em>Cadence</em>, <em>Jarida Today</em>, and other platforms, I seek stories that matter — and voices that go unheard.</p>
+    </div>
+  </section>
 
-  <!-- ═══ 02 BEDFORD ST. ═══ -->
-  <div class="flip-card" id="ucard-books">
-    <div class="flip-inner">
-      <div class="flip-front">
-        <div class="flip-front-deco">
-          <svg viewBox="0 0 280 560" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-            <rect x="90" y="80" width="6" height="380" fill="none" stroke="rgba(14,12,10,0.09)" stroke-width=".7"/>
-            <rect x="100" y="90" width="140" height="360" fill="none" stroke="rgba(14,12,10,0.06)" stroke-width=".7"/>
-            <line x1="115" y1="130" x2="225" y2="130" stroke="rgba(14,12,10,0.08)" stroke-width=".6"/>
-            <line x1="115" y1="150" x2="225" y2="150" stroke="rgba(14,12,10,0.08)" stroke-width=".6"/>
-            <line x1="115" y1="170" x2="210" y2="170" stroke="rgba(14,12,10,0.06)" stroke-width=".6"/>
-            <circle cx="195" cy="420" r="30" fill="none" stroke="rgba(192,57,43,0.22)" stroke-width=".7"/>
-          </svg>
-        </div>
-        <span class="flip-num">02</span>
-        <div class="flip-tag">Books · Bookstagram</div>
-        <div class="flip-name">Bedford St.</div>
-        <div class="flip-tagline">Where I live between pages</div>
-        <div class="flip-cta">Hover to explore ↻</div>
-      </div>
-      <div class="flip-back">
-        <div class="flip-back-art">
-          <svg viewBox="0 0 280 175" xmlns="http://www.w3.org/2000/svg">
-            <rect width="280" height="175" fill="#d9cdb8"/>
-            <!-- book stack -->
-            <rect x="60" y="100" width="160" height="14" rx="1" fill="none" stroke="rgba(192,57,43,0.48)" stroke-width=".8"/>
-            <rect x="55" y="84" width="150" height="14" rx="1" fill="none" stroke="rgba(14,12,10,0.16)" stroke-width=".8"/>
-            <rect x="65" y="68" width="155" height="14" rx="1" fill="none" stroke="rgba(14,12,10,0.14)" stroke-width=".8"/>
-            <rect x="58" y="52" width="145" height="14" rx="1" fill="none" stroke="rgba(14,12,10,0.12)" stroke-width=".8"/>
-            <!-- spines -->
-            <line x1="60" y1="100" x2="60" y2="114" stroke="rgba(192,57,43,0.64)" stroke-width=".7"/>
-            <line x1="55" y1="84" x2="55" y2="98" stroke="rgba(14,12,10,0.20)" stroke-width=".7"/>
-            <!-- reading light glow -->
-            <ellipse cx="140" cy="38" rx="50" ry="18" fill="none" stroke="rgba(192,57,43,0.16)" stroke-width="8"/>
-            <!-- pen -->
-            <line x1="190" y1="130" x2="230" y2="155" stroke="rgba(14,12,10,0.14)" stroke-width=".8"/>
-            <path d="M230,155 L237,148 L242,158 Z" fill="none" stroke="rgba(192,57,43,0.48)" stroke-width=".8"/>
-            <!-- floating words -->
-            <text font-family="Georgia,serif" fill="rgba(14,12,10,0.12)" font-size="7" letter-spacing="3" x="30" y="165">READING IS A POLITICAL ACT</text>
-          </svg>
-        </div>
-        <div class="flip-back-tags">
-          <span class="flip-back-tag">Books</span>
-          <span class="flip-back-tag">Bookstagram</span>
-          <span class="flip-back-tag">Reviews</span>
-          <span class="flip-back-tag">Literature</span>
-        </div>
-        <div class="flip-back-title">Bedford St.</div>
-        <div class="flip-back-quote">"Reading is a political act. Every book you choose is a small rebellion."</div>
-        <div class="flip-back-body">A bookstagram built on curiosity — reviews, recommendations, and the ongoing argument between books and the world they were written in.</div>
-        <div class="flip-back-foot">
-          <a href="nerds.html" class="flip-learn">Visit the Shelf →</a>
-          <div class="flip-ig"><a href="https://instagram.com/nerds.from.the.bedford.street/" target="_blank">@nerds.from.the.bedford.street ↗</a></div>
-        </div>
-      </div>
+  <div class="newsletter">
+    <p class="newsletter-text">Sign up to get new essays and dispatches when they're published.</p>
+    <div class="newsletter-form">
+      <input type="email" placeholder="your@email.com" />
+      <button>Subscribe</button>
     </div>
   </div>
 
-  <!-- ═══ 03 CHINTA ═══ -->
-  <div class="flip-card" id="ucard-chinta">
-    <div class="flip-inner">
-      <div class="flip-front">
-        <div class="flip-front-deco">
-          <svg viewBox="0 0 280 560" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-            <!-- compass rose -->
-            <circle cx="200" cy="130" r="55" fill="none" stroke="rgba(14,12,10,0.06)" stroke-width=".7"/>
-            <circle cx="200" cy="130" r="38" fill="none" stroke="rgba(14,12,10,0.04)" stroke-width=".7"/>
-            <line x1="200" y1="75" x2="200" y2="185" stroke="rgba(14,12,10,0.08)" stroke-width=".7"/>
-            <line x1="145" y1="130" x2="255" y2="130" stroke="rgba(14,12,10,0.08)" stroke-width=".7"/>
-            <path d="M200,75 L194,93 L200,89 L206,93 Z" fill="none" stroke="rgba(192,57,43,0.54)" stroke-width=".8"/>
-            <!-- thought bubble lines -->
-            <line x1="30" y1="280" x2="180" y2="280" stroke="rgba(14,12,10,0.06)" stroke-width=".6"/>
-            <line x1="30" y1="300" x2="160" y2="300" stroke="rgba(14,12,10,0.04)" stroke-width=".6"/>
-          </svg>
-        </div>
-        <span class="flip-num">03</span>
-        <div class="flip-tag">Studio · Ideas</div>
-        <div class="flip-name">Chinta<br>চিন্তা</div>
-        <div class="flip-tagline">A space to think out loud</div>
-        <div class="flip-cta">Hover to explore ↻</div>
-      </div>
-      <div class="flip-back">
-        <div class="flip-back-art">
-          <svg viewBox="0 0 280 175" xmlns="http://www.w3.org/2000/svg">
-            <rect width="280" height="175" fill="#d9cdb8"/>
-            <!-- compass rose -->
-            <circle cx="140" cy="88" r="60" fill="none" stroke="rgba(14,12,10,0.12)" stroke-width=".8"/>
-            <circle cx="140" cy="88" r="42" fill="none" stroke="rgba(14,12,10,0.08)" stroke-width=".7"/>
-            <circle cx="140" cy="88" r="18" fill="none" stroke="rgba(192,57,43,0.32)" stroke-width=".8"/>
-            <line x1="140" y1="28" x2="140" y2="148" stroke="rgba(14,12,10,0.12)" stroke-width=".7"/>
-            <line x1="80" y1="88" x2="200" y2="88" stroke="rgba(14,12,10,0.12)" stroke-width=".7"/>
-            <line x1="97" y1="45" x2="183" y2="131" stroke="rgba(14,12,10,0.08)" stroke-width=".7"/>
-            <line x1="183" y1="45" x2="97" y2="131" stroke="rgba(14,12,10,0.08)" stroke-width=".7"/>
-            <path d="M140,28 L134,46 L140,42 L146,46 Z" fill="none" stroke="rgba(192,57,43,0.80)" stroke-width=".9"/>
-            <!-- Bengali চ letterform suggestion -->
-            <text font-family="Georgia,serif" fill="rgba(192,57,43,0.19)" font-size="72" x="95" y="130">চ</text>
-            <!-- scattered words -->
-            <text font-family="Georgia,serif" fill="rgba(14,12,10,0.10)" font-size="7" letter-spacing="3" x="25" y="165">THINK · QUESTION · DISSENT</text>
-          </svg>
-        </div>
-        <div class="flip-back-tags">
-          <span class="flip-back-tag">Philosophy</span>
-          <span class="flip-back-tag">Culture</span>
-          <span class="flip-back-tag">Politics</span>
-          <span class="flip-back-tag">চিন্তা</span>
-        </div>
-        <div class="flip-back-title">Chinta — চিন্তা</div>
-        <div class="flip-back-quote">"চিন্তা means thought. And thought, rigorously pursued, is the most radical act."</div>
-        <div class="flip-back-body">A studio for ideas that don't fit neatly anywhere else — philosophy, political economy, culture, and the questions worth sitting with.</div>
-        <div class="flip-back-foot">
-          <a href="chinta.html" class="flip-learn">Explore Ideas →</a>
-          <div class="flip-ig"><a href="https://instagram.com/chintaa.studio/" target="_blank">@chintaa.studio ↗</a></div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <footer>
+    <span class="footer-logo">* Sazid</span>
+    <ul class="footer-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#writings">Writings</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+    <span class="footer-copy">© 2026 Sazid. All rights reserved.</span>
+  </footer>
 
-  <!-- ═══ 04 POSTRUN CLARITY ═══ -->
-  <div class="flip-card" id="ucard-photo">
-    <div class="flip-inner">
-      <div class="flip-front">
-        <div class="flip-front-deco">
-          <svg viewBox="0 0 280 560" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-            <!-- camera aperture -->
-            <circle cx="200" cy="120" r="55" fill="none" stroke="rgba(14,12,10,0.06)" stroke-width=".7"/>
-            <circle cx="200" cy="120" r="35" fill="none" stroke="rgba(14,12,10,0.06)" stroke-width=".7"/>
-            <circle cx="200" cy="120" r="12" fill="none" stroke="rgba(192,57,43,0.32)" stroke-width=".8"/>
-            <!-- running track lines -->
-            <path d="M20,400 Q80,380 140,400 Q200,420 260,400" fill="none" stroke="rgba(14,12,10,0.06)" stroke-width=".7"/>
-            <path d="M20,420 Q80,400 140,420 Q200,440 260,420" fill="none" stroke="rgba(14,12,10,0.04)" stroke-width=".7"/>
-          </svg>
-        </div>
-        <span class="flip-num">04</span>
-        <div class="flip-tag">Photography</div>
-        <div class="flip-name">Postrun<br>Clarity</div>
-        <div class="flip-tagline">What the run reveals</div>
-        <div class="flip-cta">Hover to explore ↻</div>
-      </div>
-      <div class="flip-back">
-        <div class="flip-back-art">
-          <svg viewBox="0 0 280 175" xmlns="http://www.w3.org/2000/svg">
-            <rect width="280" height="175" fill="#d9cdb8"/>
-            <!-- camera viewfinder -->
-            <rect x="60" y="30" width="160" height="115" rx="2" fill="none" stroke="rgba(14,12,10,0.12)" stroke-width=".8"/>
-            <!-- rule of thirds grid -->
-            <line x1="113" y1="30" x2="113" y2="145" stroke="rgba(14,12,10,0.08)" stroke-width=".6"/>
-            <line x1="167" y1="30" x2="167" y2="145" stroke="rgba(14,12,10,0.08)" stroke-width=".6"/>
-            <line x1="60" y1="68" x2="220" y2="68" stroke="rgba(14,12,10,0.08)" stroke-width=".6"/>
-            <line x1="60" y1="107" x2="220" y2="107" stroke="rgba(14,12,10,0.08)" stroke-width=".6"/>
-            <!-- aperture circle in viewfinder -->
-            <circle cx="140" cy="88" r="30" fill="none" stroke="rgba(192,57,43,0.40)" stroke-width=".8"/>
-            <circle cx="140" cy="88" r="4" fill="none" stroke="rgba(192,57,43,0.64)" stroke-width=".8"/>
-            <!-- cross-hair -->
-            <line x1="126" y1="88" x2="134" y2="88" stroke="rgba(192,57,43,0.48)" stroke-width=".7"/>
-            <line x1="146" y1="88" x2="154" y2="88" stroke="rgba(192,57,43,0.48)" stroke-width=".7"/>
-            <line x1="140" y1="74" x2="140" y2="82" stroke="rgba(192,57,43,0.48)" stroke-width=".7"/>
-            <line x1="140" y1="94" x2="140" y2="102" stroke="rgba(192,57,43,0.48)" stroke-width=".7"/>
-            <!-- corner brackets -->
-            <path d="M65,35 L75,35 M65,35 L65,45" fill="none" stroke="rgba(14,12,10,0.16)" stroke-width=".7"/>
-            <path d="M215,35 L205,35 M215,35 L215,45" fill="none" stroke="rgba(14,12,10,0.16)" stroke-width=".7"/>
-            <path d="M65,140 L75,140 M65,140 L65,130" fill="none" stroke="rgba(14,12,10,0.16)" stroke-width=".7"/>
-            <path d="M215,140 L205,140 M215,140 L215,130" fill="none" stroke="rgba(14,12,10,0.16)" stroke-width=".7"/>
-            <text font-family="Georgia,serif" fill="rgba(14,12,10,0.12)" font-size="7" letter-spacing="3" x="65" y="168">AFTER THE RUN, THE EYE IS CLEAR</text>
-          </svg>
-        </div>
-        <div class="flip-back-tags">
-          <span class="flip-back-tag">Photography</span>
-          <span class="flip-back-tag">Street</span>
-          <span class="flip-back-tag">Landscape</span>
-          <span class="flip-back-tag">Running</span>
-        </div>
-        <div class="flip-back-title">Postrun Clarity</div>
-        <div class="flip-back-quote">"The hour after running is when the eye works best. The mind quiets. The world sharpens."</div>
-        <div class="flip-back-body">Photography born in motion. Street shots, landscapes, and the in-between moments that only show up when you've already run past them.</div>
-        <div class="flip-back-foot">
-          <a href="photo.html" class="flip-learn">See the Work →</a>
-          <div class="flip-ig"><a href="https://instagram.com/postrunclarity.sazid/" target="_blank">@postrunclarity.sazid ↗</a></div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div id="post-overlay"></div>
 
-  <!-- ═══ 05 WHAT SCENES? ═══ -->
-  <div class="flip-card" id="ucard-whatscenes">
-    <div class="flip-inner">
-      <div class="flip-front">
-        <div class="flip-front-deco">
-          <svg viewBox="0 0 280 560" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-            <!-- flagpole -->
-            <line x1="200" y1="30" x2="200" y2="560" fill="none" stroke="rgba(14,12,10,0.08)" stroke-width=".8"/>
-            <path d="M200,50 L250,70 L232,92 L200,78 Z" fill="none" stroke="rgba(192,57,43,0.45)" stroke-width=".8"/>
-            <!-- ground scatter -->
-            <line x1="30" y1="490" x2="130" y2="460" stroke="rgba(14,12,10,0.06)" stroke-width=".7"/>
-            <line x1="80" y1="510" x2="160" y2="480" stroke="rgba(14,12,10,0.04)" stroke-width=".7"/>
-            <path d="M130,460 L137,450 L142,462 Z" fill="none" stroke="rgba(192,57,43,0.36)" stroke-width=".7"/>
-          </svg>
-        </div>
-        <span class="flip-num">05</span>
-        <div class="flip-tag">Philosophy · Economics · Culture</div>
-        <div class="flip-name">What<br>Scenes?</div>
-        <div class="flip-tagline">Asking what's really going on</div>
-        <div class="flip-cta">Hover to explore ↻</div>
-      </div>
-      <div class="flip-back">
-        <div class="flip-back-art">
-          <svg viewBox="0 0 280 175" xmlns="http://www.w3.org/2000/svg">
-            <rect width="280" height="175" fill="#d9cdb8"/>
-            <!-- stage / proscenium arch -->
-            <path d="M20,155 L20,50 Q20,30 40,30 L240,30 Q260,30 260,50 L260,155" fill="none" stroke="rgba(14,12,10,0.12)" stroke-width=".8"/>
-            <!-- curtain lines -->
-            <path d="M20,30 Q35,60 25,90 Q15,120 28,155" fill="none" stroke="rgba(192,57,43,0.32)" stroke-width=".8"/>
-            <path d="M260,30 Q245,60 255,90 Q265,120 252,155" fill="none" stroke="rgba(192,57,43,0.32)" stroke-width=".8"/>
-            <!-- spotlight circle on stage -->
-            <ellipse cx="140" cy="135" rx="55" ry="20" fill="none" stroke="rgba(192,57,43,0.24)" stroke-width="8"/>
-            <!-- question mark -->
-            <text font-family="Georgia,serif" fill="rgba(192,57,43,0.32)" font-size="60" font-style="italic" x="112" y="120">?</text>
-            <!-- scattered words -->
-            <text font-family="Georgia,serif" fill="rgba(14,12,10,0.10)" font-size="7" letter-spacing="2" x="40" y="168">POLITICS · ECONOMICS · CULTURE</text>
-            <!-- flagpoles inside stage -->
-            <line x1="70" y1="50" x2="70" y2="155" stroke="rgba(14,12,10,0.10)" stroke-width=".7"/>
-            <path d="M70,55 L100,65 L90,78 L70,68 Z" fill="none" stroke="rgba(14,12,10,0.14)" stroke-width=".7"/>
-            <line x1="210" y1="50" x2="210" y2="155" stroke="rgba(14,12,10,0.10)" stroke-width=".7"/>
-            <path d="M210,55 L180,65 L190,78 L210,68 Z" fill="none" stroke="rgba(14,12,10,0.14)" stroke-width=".7"/>
-          </svg>
-        </div>
-        <div class="flip-back-tags">
-          <span class="flip-back-tag">Politics</span>
-          <span class="flip-back-tag">Economics</span>
-          <span class="flip-back-tag">Philosophy</span>
-          <span class="flip-back-tag">Culture</span>
-        </div>
-        <div class="flip-back-title">What Scenes?</div>
-        <div class="flip-back-quote">"The world is always performing something. The question is whether you're watching — or asking what the performance means."</div>
-        <div class="flip-back-body">A platform for unpacking moments — political, cultural, economic. For the person who watches the news and asks: but what's actually happening here?</div>
-        <div class="flip-back-foot">
-          <a href="whatscenes.html" class="flip-learn">Unpack the Scene →</a>
-          <div class="flip-ig"><a href="https://instagram.com/whatscenes_/" target="_blank">@whatscenes_ ↗</a></div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <script>
+    // ── ALL YOUR POSTS ──────────────────────────────────────
+    const POSTS = [
+      { id:1, title:"The True Cost of Partition", language:"English", category:"Essay", date:"2024-08-14", featured:true,
+        excerpt:"Divide and Rule didn't end with Independence — it just changed shape. Why must we talk of Hindus, Muslims, Sikhs? All we have to worry about is that we are men.",
+        content:`Divide and Rule didn't end with Independence — it just changed shape.\n\nWhy must we talk of Hindus, Muslims, Sikhs? All we have to worry about is that we are men. The lines drawn on maps have a longer life than the hands that drew them, and the wounds they left behind travel across generations, shapeshifting into silence, into pride, into grief we can't quite name.\n\nThe Partition of 1947 was not merely a political event. It was a rupture — of families, of streets, of languages, of memory. And it did not end when the last train crossed the border.` },
+      { id:2, title:"Near. There. Where?", language:"English", category:"Essay", date:"2024-06-01", featured:false,
+        excerpt:"Times and again, I pause — and picture how blessed I am. I enjoy the beauty of words. I love the way they carry weight beyond themselves.",
+        content:`Times and again, I pause — and picture how blessed I am.\n\nI enjoy the beauty of words. I love the way they carry weight beyond themselves, the way a sentence can hold a world, and a paragraph can hold a life.\n\nNear. There. Where? These words feel small. But press them together and they become a question about belonging — about the distance between where you are and where you thought you'd be.` },
+      { id:3, title:"অকৃতজ্ঞ", language:"বাংলা", category:"প্রবন্ধ", date:"2024-05-10", featured:false,
+        excerpt:"বিনিদ্র রজনী। ঝরাপর অঝোর বর্ষণ। বাইরে মাঝে মাঝে বিদ্যুৎ চমকানি। দূরে মেঘের মৃদু গুঞ্জন যেন কোনো অশনির সংকেত।",
+        content:`বিনিদ্র রজনী। ঝরাপর অঝোর বর্ষণ। বাইরে মাঝে মাঝে বিদ্যুৎ চমকানি। দূরে মেঘের মৃদু গুঞ্জন যেন কোনো অশনির সংকেত।\n\nআমি জানলার পাশে বসে আছি। বৃষ্টির শব্দ শুনছি। ভাবছি — কতটুকু পেয়েছি, কতটুকু দিয়েছি।\n\nঅকৃতজ্ঞতা মানুষকে ভেতর থেকে ফাঁকা করে দেয়।` },
+      { id:4, title:"তোমাকে — কে ডাকে?", language:"বাংলা", category:"প্রবন্ধ", date:"2024-04-20", featured:false,
+        excerpt:"আটপৌরে সংসারের ন্যায় – আটপৌরে জীবন আমার। যেথায় এখন নিশীথের কারা বাসা বাঁধার সময়, সেথায় সায়েন্সের রুলি আঙ্রানো কি শোভা।",
+        content:`আটপৌরে সংসারের ন্যায় – আটপৌরে জীবন আমার।\n\nযেথায় এখন নিশীথের কারা বাসা বাঁধার সময়, সেথায় সায়েন্সের রুলি আঙ্রানো কি শোভা। তবুও আমি লিখি। কারণ লেখা থামালে আমি থামি।\n\nতোমাকে — কে ডাকে? সেই প্রশ্নের উত্তর হয়তো লেখার ভেতরেই আছে।` },
+      { id:5, title:"A Farewell to Arms", language:"English", category:"Book Review", date:"2024-03-15", featured:false,
+        excerpt:"I read the book a year ago, when the rain of promise would ripple along my arms. A year later, I return to it — and it returns something to me.",
+        content:`I read the book a year ago, when the rain of promise would ripple along my arms.\n\nA year later, I return to it — and it returns something to me.\n\nHemingway writes war the way war actually feels: not heroic, not cinematic, but exhausting and random and full of love that doesn't know what to do with itself. A Farewell to Arms is not an anti-war novel. It is a novel about what war does to the people who survive it.` },
+      { id:6, title:"লিখতে কী লাগে?", language:"বাংলা", category:"প্রবন্ধ", date:"2024-02-28", featured:false,
+        excerpt:"লিখতে কী লাগে? বোধ, নাকি একটা মন? সে মনে কি প্রেম থাকা লাগে, নাকি বিরহ? বাইরে বাধকির ঝিমঝিম বৃষ্টি টুপটুপ।",
+        content:`লিখতে কী লাগে? বোধ, নাকি একটা মন?\n\nসে মনে কি প্রেম থাকা লাগে, নাকি বিরহ? বাইরে বাধকির ঝিমঝিম বৃষ্টি টুপটুপ।\n\nআমি মনে করি লেখার জন্য শুধু একটা জিনিস লাগে — সততা। নিজের প্রতি সৎ থাকা। পাঠকের প্রতি সৎ থাকা। শব্দের প্রতি সৎ থাকা।` },
+      { id:7, title:"The God of Small Things", language:"English", category:"Book Review", date:"2024-01-10", featured:false,
+        excerpt:"They all crossed into forbidden territory, they all tempered with laws — WHO SHOULD WE LOVE, AND HOW, AND HOW MUCH.",
+        content:`They all crossed into forbidden territory, they all tempered with laws — WHO SHOULD WE LOVE, AND HOW, AND HOW MUCH.\n\nArundhati Roy's debut is an act of literary defiance. It bends time, breaks grammar, invents its own capitalization rules — and somehow, it works.\n\nThe God of Small Things is about the small things that carry enormous weight: a touch, a glance, a door left open, a love that cannot speak its name.` },
+      { id:8, title:"STEM Girl or STAY Girl?", language:"English", category:"Commentary", date:"2023-12-05", featured:false,
+        excerpt:"The Struggle for Equality in South Asian Girls' Education. The 1948 Universal Declaration of Human Rights Article 26 promised education for all. We're still waiting.",
+        content:`The Struggle for Equality in South Asian Girls' Education.\n\nThe 1948 Universal Declaration of Human Rights Article 26 promised education for all. We're still waiting.\n\nIn Bangladesh, in Pakistan, in parts of India — girls are still being asked to choose between studying science and staying home. But the real question is: who gets to make that choice for them?` },
+      { id:9, title:"Why I Almost Proposed to ChatGPT", language:"English", category:"Personal", date:"2023-11-20", featured:false,
+        excerpt:"It all started as a fun thing. Some juniors approached me saying, 'Bhai! As you use ChatGPT this much, why don't you just marry it?'",
+        content:`It all started as a fun thing.\n\nSome juniors approached me saying, "Bhai! As you use ChatGPT this much, why don't you just marry it?" And I laughed. But then I thought about it.\n\nWhat does it mean that I find it easier to talk to an AI than to some people? What does it mean that it never judges, never tires, never leaves mid-sentence? This essay is not about AI. It is about loneliness, and about what we reach for when we need to be heard.` },
+    ];
 
-</div><!-- end flip-grid -->
-</div><!-- end universe -->
-</div><!-- end universe -->
-
-
-<!-- ── WRITING SECTION ──────────────────────────────────── -->
-<div class="writing-section" id="writings">
-
-  <!-- header + filters -->
-  <div class="ws-header">
-    <span class="ws-label">* Latest Essays</span>
-    <div class="ws-filters">
-      <button class="ws-filter active" onclick="wsFilter('featured',this)">Featured</button>
-      <button class="ws-filter" onclick="wsFilter('all',this)">All Writings</button>
-    </div>
-  </div>
-
-  <!-- featured view -->
-  <div id="ws-featured-view">
-    <div class="ws-featured">
-      <div class="ws-featured-main" id="ws-featured-main"></div>
-      <div class="ws-sidebar" id="ws-sidebar"></div>
-    </div>
-    <div class="ws-more" id="ws-more"></div>
-  </div>
-
-  <!-- all writings grid -->
-  <div class="ws-grid-wrap" id="ws-grid-view">
-    <div class="ws-grid" id="ws-grid"></div>
-  </div>
-
-</div>
-
-<!-- ── BOOKS STRIP ─────────────────────────────────────── -->
-<div class="books-strip" id="books-strip"></div>
-
-<section class="about-strip" id="about">
-  <div>
-    <span class="about-heading">* About</span>
-    <div class="about-name-big">Sazid</div>
-    <div class="about-descriptors">
-      <span>A Writer</span><span>A Reader</span><span>Tech Savvy</span><span>A Dreamer</span>
-    </div>
-  </div>
-  <div>
-    <p class="about-text">I'm Sazid — a writer and communicator with roots in <em>Bangladesh</em> and a vision beyond borders. I write about identity, memory, and the forces that shape our world.</p>
-    <p class="about-text">Through <em>Cadence</em>, <em>Jarida Today</em>, and other platforms, I seek stories that matter — and voices that go unheard.</p>
-  </div>
-</section>
-
-<div class="newsletter">
-  <p class="newsletter-text">Sign up to get new essays and dispatches when published.</p>
-  <div class="newsletter-form">
-    <input type="email" placeholder="your@email.com"/>
-    <button>Subscribe</button>
-  </div>
-</div>
-
-<footer>
-  <span class="footer-logo">* Sazid</span>
-  <ul class="footer-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="#writings">Writings</a></li>
-    <li><a href="#about">About</a></li>
-  </ul>
-  <span class="footer-copy">© 2026 Sazid. All rights reserved.</span>
-</footer>
-
-<div id="post-overlay"></div>
-
-<script>
-  // ── POSTS — edit posts.json on GitHub to update ──────────
-  // Format: { id, title, language, category, date, excerpt, content, featured }
-  // To add a post: go to your GitHub repo, edit posts.json, commit. Done.
-  const POSTS = [
-    { id:1, title:"The True Cost of Partition", language:"English", category:"Essay", date:"2024-08-14", featured:true,
-      excerpt:"Divide and Rule didn't end with Independence — it just changed shape. Why must we talk of Hindus, Muslims, Sikhs? All we have to worry about is that we are men.",
-      content:"Divide and Rule didn't end with Independence — it just changed shape.\n\nWhy must we talk of Hindus, Muslims, Sikhs? All we have to worry about is that we are men. The Partition of 1947 was not merely a geographical division — it was a wound cut into the subcontinent's collective memory, one that bleeds in different ways with every passing generation.\n\nI grew up hearing stories. My grandmother spoke of neighbours who disappeared overnight. My father spoke of identity cards, of being asked which side you were on before being asked your name. These were not abstract historical events — they were the texture of lived lives, compressed and carried across borders.\n\nWhat troubles me most is not the violence itself — history is full of violence — but the way we have institutionalised the division. We have made the wound permanent by insisting it defines us. Every time a politician says 'Hindu-Muslim', every time a border guard asks your religion, the Partition continues.\n\nThe true cost of Partition is not measured in lives lost in 1947. It is measured in the identities we cannot inhabit today, the friendships that don't form across borders, the literature that doesn't travel, the music that doesn't reach its audience." },
-
-    { id:2, title:"Near. There. Where?", language:"English", category:"Essay", date:"2024-06-01", featured:false,
-      excerpt:"Times and again, I pause — and picture how blessed I am. I enjoy the beauty of words. I love the way they carry weight beyond their syllables.",
-      content:"Times and again, I pause — and picture how blessed I am.\n\nI enjoy the beauty of words. I love the way they carry weight beyond their syllables, the way a sentence can land differently at different moments of your life. The same line of Rilke that meant nothing at seventeen can crack you open at twenty-three.\n\nNear. There. Where? These three words arrived in my head during a walk. I did not know what they meant. I still don't entirely. But I wrote them down because that is what you do — you catch things before they dissolve.\n\nI think they are about proximity. About how the things we want most are always just slightly out of reach — not impossibly far, just frustratingly near. Near enough to see. There, somewhere. But where exactly?\n\nWriting is my attempt to close that distance." },
-
-    { id:3, title:"অকৃতজ্ঞ", language:"বাংলা", category:"প্রবন্ধ", date:"2024-05-10", featured:false,
-      excerpt:"বিনিদ্র রজনী। ঝরাপড়ার অঝোর বর্ষণ। বাইরে মাঝে মাঝে বিদ্যুৎ চমকানি। দূরে মেঘের মৃদু গুঞ্জন যেন কোনো অশনির সংকেত।",
-      content:"বিনিদ্র রজনী। ঝরাপড়ার অঝোর বর্ষণ। বাইরে মাঝে মাঝে বিদ্যুৎ চমকানি।\n\nদূরে মেঘের মৃদু গুঞ্জন যেন কোনো অশনির সংকেত। আমি জানালার ধারে বসে আছি। বৃষ্টির শব্দ শুনছি। ভাবছি কৃতজ্ঞতার কথা।\n\nআমরা কি সত্যিই কৃতজ্ঞ থাকতে পারি? নাকি কৃতজ্ঞতা একটি সাময়িক অনুভূতি — ভালো কিছু ঘটলে মনে পড়ে, কিন্তু দৈনন্দিন জীবনে হারিয়ে যায়?\n\nআমার মনে হয় আমরা বেশিরভাগ সময় অকৃতজ্ঞ। শুধু অন্যের প্রতি নয়, নিজের জীবনের প্রতি।" },
-
-    { id:4, title:"তোমাকে — কে ডাকে?", language:"বাংলা", category:"প্রবন্ধ", date:"2024-04-20", featured:false,
-      excerpt:"আটপৌরে সংসারের ন্যায় – আটপৌরে জীবন আমার। যেথায় এখন নিশীথের কারা বাসা বাঁধার সময়, সেথায় সায়েন্সের কুলি আঙ্গানে কি শো।",
-      content:"আটপৌরে সংসারের ন্যায় – আটপৌরে জীবন আমার।\n\nযেথায় এখন নিশীথের কারা বাসা বাঁধার সময়, সেথায় সায়েন্সের কুলি আঙ্গানে কি শোভা? তবুও বসে আছি। লিখছি। কারণ না লিখলে কে ডাকবে?\n\nলেখা একটি ডাক। নিজের ভেতর থেকে। অন্যের দিকে। সেই ডাকে সাড়া দেওয়াই লেখকের কাজ।" },
-
-    { id:5, title:"A Farewell to Arms", language:"English", category:"Book Review", date:"2024-03-15", featured:false,
-      excerpt:"I read the book a year ago, when the rain of promise would ripple along my arms. A year later, I return to it with different eyes.",
-      content:"I read the book a year ago, when the rain of promise would ripple along my arms.\n\nA year later, I return to it. Hemingway's sentences still hit the same way — short, declarative, like stones dropped into still water. Each one creates rings that spread outward long after the sentence has ended.\n\nThe love story is not the point, though it is the vehicle. The point is what war does to meaning. How it makes the grand gestures of peacetime feel absurd. How it makes even love feel like a brief shelter from the rain.\n\nI underlined this on first reading: 'The world breaks every one and afterward many are strong at the broken places.' I still believe it. I am less sure about what it costs to become strong." },
-
-    { id:6, title:"লিখতে কী লাগে?", language:"বাংলা", category:"প্রবন্ধ", date:"2024-02-28", featured:false,
-      excerpt:"লিখতে কী লাগে? বোধ, নাকি একটা মন? সে মনে কি প্রেম থাকা লাগে, নাকি বিরহ? বাইরে বাদলিকর ঝিমঝিম বৃষ্টি টুপটুপ।",
-      content:"লিখতে কী লাগে?\n\nবোধ, নাকি একটা মন? সে মনে কি প্রেম থাকা লাগে, নাকি বিরহ? বাইরে বাদলিকর ঝিমঝিম বৃষ্টি টুপটুপ। আমি বসে ভাবছি।\n\nআমার মনে হয় লিখতে লাগে শুধু মনোযোগ। সেই মনোযোগ যা একটা মুহূর্তকে ধরে রাখে। বৃষ্টির শব্দ, কারো হাসির ভঙ্গি, একটা বাক্যের ছন্দ।\n\nলেখা মানে সেই মনোযোগকে ভাষা দেওয়া।" },
-
-    { id:7, title:"The God of Small Things", language:"English", category:"Book Review", date:"2024-01-20", featured:false,
-      excerpt:"They all crossed into forbidden territory, they all tempered with the laws that lay down who should be loved, and how, and how much.",
-      content:"They all crossed into forbidden territory, they all tempered with the laws that lay down who should be loved, and how, and how much.\n\nArundhati Roy's novel does something that very few books manage: it makes you grieve for people who never existed. By the end, you carry Ammu and Velutha with you. You are implicated in what happened to them, even though you are only a reader.\n\nThe book is about small things — the smell of oranges, the way light falls, a child's observations that cut deeper than adult analysis. Roy understands that history lives in these small things. The big forces of caste and colonialism and family shame are always expressed through small acts, small cruelties, small moments of cowardice.\n\nI read it in Dhaka, in summer. The heat felt appropriate." },
-
-    { id:8, title:"STEM Girl or STAY Girl?", language:"English", category:"Commentary", date:"2023-12-10", featured:false,
-      excerpt:"The Struggle for Equality in South Asian Girls' Education. The 1948 Universal Declaration of Human Rights Article 26 states education is a fundamental right.",
-      content:"The 1948 Universal Declaration of Human Rights, Article 26: education is a fundamental right.\n\nAnd yet, in 2023, South Asian girls are still being asked to choose. Not between subjects, but between ambition and belonging. Between a career and a family that approves of them.\n\nThe STEM conversation misses the point. It is not about which subjects girls should study. It is about whether girls are allowed to want things — and to pursue those wants without losing the people they love.\n\nThe stay-or-go question is not about geography. It is about whether a girl's aspirations are taken seriously in her own home." },
-
-    { id:9, title:"Why I Almost Proposed to ChatGPT", language:"English", category:"Personal", date:"2023-11-05", featured:false,
-      excerpt:"It all started as a fun thing. Some juniors approached me saying, 'Bhai! As you use ChatGPT this much, why don't you marry it?'",
-      content:"It all started as a fun thing.\n\nSome juniors approached me saying, 'Bhai! As you use ChatGPT this much, why don't you marry it?' I laughed. Then I thought about it. Then I got slightly unsettled.\n\nThe thing about ChatGPT — about any good AI — is that it is relentlessly patient. It does not get tired. It does not get distracted. It does not need anything from you. Which sounds like a virtue until you realize that what you actually want from another person is their need, their distraction, their tiredness. You want to matter to someone who could, in theory, walk away.\n\nAn AI cannot walk away. That is not a relationship. That is a mirror that always reflects you well.\n\nI am not going to propose to ChatGPT. But I think about what it means that I briefly considered it." },
-
-    { id:10, title:"Who am I and Why!", language:"English", category:"Personal", date:"2023-10-01", featured:false,
-      excerpt:"The question followed me across three cities and two degree programs before I realized it was not a question to be answered but a question to live inside.",
-      content:"The question followed me across three cities and two degree programs before I realized it was not a question to be answered but a question to live inside.\n\nWho am I? The Bengali boy from Dhaka who came to Georgetown on a scholarship. The writer who didn't know he was a writer until a professor said so. The Muslim who asks too many questions. The friend who listens too carefully and remembers too much.\n\nAll of these. None of these. Something in between that doesn't have a name yet.\n\nI think identity is something you negotiate with the world, not something you discover in yourself. You become who you are in the encounters — in the moments where someone expects one thing from you and you give them another." },
-
-    { id:11, title:"The Fading Symphony", language:"English", category:"Essay", date:"2023-09-15", featured:false,
-      excerpt:"There is a kind of beauty that announces its own ending. The last movement of a symphony you love. The last hour of a summer afternoon.",
-      content:"There is a kind of beauty that announces its own ending.\n\nThe last movement of a symphony you love. The last hour of a summer afternoon. The final chapter of a book you have been reading slowly on purpose.\n\nI have been thinking about why this kind of beauty — beauty in decline, beauty that knows it is ending — moves us so deeply. More, often, than beauty at its height.\n\nI think it is because ending strips away the ornament. What remains when the music is almost over is only what was essential. The sadness of ending is the sadness of recognizing what mattered." },
-
-    { id:12, title:"Norwegian Wood", language:"English", category:"Book Review", date:"2023-08-20", featured:false,
-      excerpt:"Murakami writes grief the way it actually moves — not in a straight line, but circling back, finding you in unexpected places.",
-      content:"Murakami writes grief the way it actually moves — not in a straight line, but circling back, finding you in unexpected places.\n\nNorwegian Wood is a book about being twenty and not knowing how to carry loss. Toru doesn't know what to do with Kizuki's death or with Naoko's pain. He moves through the world with a kind of careful attentiveness, noticing everything, understanding little.\n\nI recognized that attentiveness. The sense that if you pay close enough attention, meaning will eventually reveal itself. It doesn't, of course. Or it does, but not in the way you expected.\n\nThe Beatles song plays at the beginning and the end. When I listen to it now, I hear the novel inside it." }
-  ];
-
-  // ── BOOKS for homepage strip ─────────────────────────────
-  const RECENT_BOOKS = [
-    { title:"Educated", author:"Tara Westover", color:"#2c3e50" },
-    { title:"Remains of the Day", author:"Kazuo Ishiguro", color:"#8e3a2a" },
-    { title:"Sapiens", author:"Yuval Noah Harari", color:"#1a4a2e" },
-    { title:"Giovanni's Room", author:"James Baldwin", color:"#3d2b1f" },
-    { title:"Why Nations Fail", author:"Acemoglu", color:"#4a3728" },
-    { title:"God of Small Things", author:"Roy", color:"#1e3a5f" },
-    { title:"Norwegian Wood", author:"Murakami", color:"#5c2a2a" },
-    { title:"Between the World and Me", author:"Coates", color:"#2a3d2a" },
-  ];
-
-  // ── HELPERS ──────────────────────────────────────────────
-  function fmt(d) {
-    return new Date(d+'T00:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  }
-  function trunc(t, n) { return t && t.length>n ? t.slice(0,n).trimEnd()+'…' : (t||''); }
-  function sorted() { return [...POSTS].sort((a,b)=>new Date(b.date)-new Date(a.date)); }
-  function featured() { return POSTS.find(p=>p.featured) || sorted()[0]; }
-
-  // ── RENDER FEATURED VIEW ─────────────────────────────────
-  function renderFeaturedView() {
-    const f = featured();
-    const sidebar = sorted().filter(p=>p.id!==f.id).slice(0,3);
-    const more = sorted().filter(p=>p.id!==f.id).slice(3,7);
-
-    document.getElementById('ws-featured-main').innerHTML = `
-      <span class="ws-featured-tag">* ${f.category} — New</span>
-      <h2 class="ws-featured-title">${f.title}</h2>
-      <div class="ws-featured-byline">By Sazid &nbsp;·&nbsp; ${fmt(f.date)}</div>
-      <p class="ws-featured-excerpt">${trunc(f.excerpt, 200)}</p>
-      <span class="ws-read-more">Read Essay →</span>`;
-    document.getElementById('ws-featured-main').onclick = () => openPost(f.id);
-
-    document.getElementById('ws-sidebar').innerHTML = sidebar.map(p=>`
-      <div class="ws-sidebar-item" onclick="openPost(${p.id})">
-        <span class="ws-sidebar-tag">* ${p.category}</span>
-        <div class="ws-post-title">${p.title}</div>
-        <div class="ws-post-byline">By Sazid · ${fmt(p.date)}</div>
-        <p class="ws-post-excerpt">${trunc(p.excerpt, 100)}</p>
-      </div>`).join('');
-
-    document.getElementById('ws-more').innerHTML =
-      `<span class="ws-more-label">More Writing</span>` +
-      more.map(p=>`
-        <div class="ws-more-item" onclick="openPost(${p.id})">
-          <div class="ws-more-title">${p.title}</div>
-          <div class="ws-more-meta">By Sazid · ${p.language}</div>
-        </div>`).join('');
-  }
-
-  // ── RENDER ALL WRITINGS GRID ─────────────────────────────
-  function renderGrid(filter) {
-    const posts = filter && filter!=='all'
-      ? sorted().filter(p=>p.category===filter||p.language===filter)
-      : sorted();
-    document.getElementById('ws-grid').innerHTML = posts.map((p,i)=>`
-      <div class="ws-card" onclick="openPost(${p.id})">
-        <span class="ws-card-num">${String(i+1).padStart(2,'0')}</span>
-        <span class="ws-card-lang">${p.language} · ${p.category}</span>
-        <div class="ws-card-title">${p.title}</div>
-        <p class="ws-card-excerpt">${trunc(p.excerpt,100)}</p>
-        <div class="ws-card-date">${fmt(p.date)}</div>
-      </div>`).join('');
-  }
-
-  // ── FILTER TOGGLE ────────────────────────────────────────
-  function wsFilter(view, btn) {
-    document.querySelectorAll('.ws-filter').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    if (view==='featured') {
-      document.getElementById('ws-featured-view').style.display='block';
-      document.getElementById('ws-grid-view').classList.remove('active');
-    } else {
-      document.getElementById('ws-featured-view').style.display='none';
-      document.getElementById('ws-grid-view').classList.add('active');
-      renderGrid();
+    // ── HELPERS ──────────────────────────────────────────────
+    function formatDate(d) {
+      return new Date(d + "T00:00:00").toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
     }
-  }
+    function truncate(t, n=160) { return t.length <= n ? t : t.slice(0,n).trimEnd() + "…"; }
+    function getFeatured() { return POSTS.find(p => p.featured) || POSTS[0]; }
+    function getSidebar()  { const f = getFeatured(); return POSTS.filter(p => p.id !== f.id).slice(0,3); }
+    function allSorted()   { return [...POSTS].sort((a,b) => new Date(b.date)-new Date(a.date)); }
 
-  // ── BOOKS STRIP ──────────────────────────────────────────
-  function renderBooks() {
-    document.getElementById('books-strip').innerHTML =
-      `<span class="books-strip-label">* Reading<br><a href="books.html">See all →</a></span>` +
-      RECENT_BOOKS.map(b=>`
-        <div class="book-spine" style="background:${b.color}" title="${b.title} — ${b.author}">
-          <span class="book-spine-title">${b.title}</span>
-          <span class="book-spine-author">${b.author}</span>
-        </div>`).join('');
-  }
+    // ── RENDER FEATURED ───────────────────────────────────────
+    function renderFeatured() {
+      const post = getFeatured(), sidebar = getSidebar();
+      document.getElementById("featured-section").innerHTML = `
+        <div class="featured">
+          <div class="featured-main" onclick="openPost(${post.id})">
+            <span class="article-tag">* ${post.category} — New</span>
+            <h2 class="featured-title">${post.title}</h2>
+            <div class="featured-byline">By Sazid &nbsp;·&nbsp; ${formatDate(post.date)}</div>
+            <p class="featured-excerpt">${post.excerpt}</p>
+            <span class="read-more">Read essay →</span>
+          </div>
+          <div class="featured-sidebar">
+            ${sidebar.map(p => `
+              <div class="article-list-item" onclick="openPost(${p.id})">
+                <span class="article-tag">* ${p.category}</span>
+                <div class="article-list-title">${p.title}</div>
+                <div class="article-list-byline">By Sazid · ${formatDate(p.date)}</div>
+                <p class="article-list-excerpt">${truncate(p.excerpt, 120)}</p>
+              </div>`).join("")}
+          </div>
+        </div>`;
+    }
 
-  // ── OPEN POST ────────────────────────────────────────────
-  function openPost(id) {
-    const p = POSTS.find(p=>p.id===id); if(!p) return;
-    const paras = (p.content||'').split('\n\n').filter(Boolean);
-    let body = '';
-    paras.forEach((block,i) => {
-      if (i>0 && i%3===0) body += `<div class="post-section-marker">${String(Math.floor(i/3)+1).padStart(2,'0')}</div>`;
-      if (block.startsWith('> ')) body += `<blockquote><p>${block.slice(2)}</p></blockquote>`;
-      else body += `<p>${block.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</p>`;
-    });
-    const sectionCount = Math.ceil(paras.length/3);
-    const toc = Array.from({length:sectionCount},(_,i)=>
-      `<div class="post-toc-marker ${i===0?'active':''}">${String(i+1).padStart(2,'0')}</div>`).join('');
+    // ── RENDER MORE WRITING ───────────────────────────────────
+    function renderMore() {
+      const used = [getFeatured().id, ...getSidebar().map(p=>p.id)];
+      const more = POSTS.filter(p => !used.includes(p.id)).slice(0,3);
+      if (!more.length) return;
+      document.getElementById("coming-soon-section").innerHTML = `
+        <div class="coming-soon">
+          <span class="coming-soon-label">More Writing</span>
+          <div class="coming-soon-items">
+            ${more.map(p=>`
+              <div class="coming-soon-item" onclick="openPost(${p.id})">
+                <div class="coming-soon-title">${p.title}</div>
+                <div class="coming-soon-author">By Sazid · ${p.language}</div>
+              </div>`).join("")}
+          </div>
+        </div>`;
+    }
 
-    const overlay = document.getElementById('post-overlay');
-    overlay.innerHTML = `
-      <div class="post-layout">
-        <div class="post-sidebar">
-          <button class="post-close" onclick="closePost()">← Back</button>
-          <span class="post-sidebar-tag">* ${p.category}</span>
-          <span class="post-sidebar-date">${fmt(p.date)}</span>
-          <div class="post-toc">${toc}</div>
-        </div>
-        <div class="post-main">
-          <span class="post-full-tag">* ${p.category} · ${p.language}</span>
+    // ── RENDER GRID ───────────────────────────────────────────
+    function renderGrid(filter="All") {
+      const posts = allSorted().filter(p => filter==="All" || p.category===filter || p.language===filter);
+      document.getElementById("writings-grid").innerHTML = posts.map((p,i) => `
+        <div class="writing-card" onclick="openPost(${p.id})">
+          <span class="writing-card-number">${String(i+1).padStart(2,"0")}</span>
+          <span class="writing-card-lang">${p.language} · ${p.category}</span>
+          <div class="writing-card-title">${p.title}</div>
+          <p class="writing-card-excerpt">${truncate(p.excerpt,110)}</p>
+          <div class="writing-card-date">${formatDate(p.date)}</div>
+        </div>`).join("");
+    }
+
+    // ── RENDER FILTER TABS ────────────────────────────────────
+    function renderTabs() {
+      const cats = ["All", ...new Set(POSTS.map(p=>p.category))];
+      document.getElementById("filter-tabs").innerHTML = cats.map(c=>`
+        <button class="filter-tab ${c==="All"?"active":""}" onclick="setFilter('${c}',this)">${c}</button>`).join("");
+    }
+    function setFilter(f, btn) {
+      document.querySelectorAll(".filter-tab").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      renderGrid(f);
+    }
+
+    // ── OPEN / CLOSE POST ─────────────────────────────────────
+    function openPost(id) {
+      const p = POSTS.find(p=>p.id===id); if(!p) return;
+      document.getElementById("post-overlay").innerHTML = `
+        <div class="post-overlay-inner">
+          <button class="post-close" onclick="closePost()">← Back to all writing</button>
+          <span class="article-tag">* ${p.category} · ${p.language}</span>
           <h1 class="post-full-title">${p.title}</h1>
-          <div class="post-full-byline">By Sazid &nbsp;·&nbsp; ${fmt(p.date)}</div>
-          <div class="post-full-body">${body}</div>
-        </div>
-      </div>`;
-    overlay.classList.add('open');
-    document.body.style.overflow='hidden';
-    overlay.scrollTop=0;
-    requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.classList.add('visible')));
-  }
+          <div class="post-full-byline">By Sazid &nbsp;·&nbsp; ${formatDate(p.date)}</div>
+          <div class="post-full-body">${p.content.split("\n\n").map(para=>`<p>${para}</p>`).join("")}</div>
+        </div>`;
+      document.getElementById("post-overlay").classList.add("open");
+      document.body.style.overflow = "hidden";
+      window.scrollTo(0,0);
+    }
+    function closePost() {
+      document.getElementById("post-overlay").classList.remove("open");
+      document.body.style.overflow = "";
+    }
 
-  function closePost() {
-    const o = document.getElementById('post-overlay');
-    o.classList.remove('visible');
-    setTimeout(()=>{ o.classList.remove('open'); document.body.style.overflow=''; }, 350);
-  }
-
-  // ── INIT ─────────────────────────────────────────────────
-  document.addEventListener('DOMContentLoaded', () => {
-    renderFeaturedView();
-    renderBooks();
-  });
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onerror="console.warn('Supabase offline')"></script>
+    // ── INIT ──────────────────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", () => {
+      renderFeatured(); renderMore(); renderTabs(); renderGrid();
+    });
+  </script>
 </body>
 </html>
